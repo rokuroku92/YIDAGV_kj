@@ -1,0 +1,121 @@
+.item {
+  width: 25%;
+  background-color: #E9FF66;
+  margin: 5px;
+  justify-content: center;
+  align-items: center;
+  color: #526E89;
+  font-size: 2rem;
+  padding:10px;
+}
+.st{
+    width: 100%;
+    height:2.3em;
+}
+.st1{
+    padding: 2px;
+    width:100%;
+    height:2.8em;
+    font-size: 13px;
+    text-align: center;
+}
+.starttd{
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+.parse{
+    width:100%;
+    height:70px;
+    text-align: center;
+    background-color: #EFEFEF;
+    border: 0;
+}
+.btn-success{
+    --bs-btn-disabled-opacity:1;
+    --bs-btn-disabled-bg:#93ba55;
+    --bs-btn-disabled-border-color:#93ba55;
+}
+.btn-danger{
+    --bs-btn-disabled-opacity:1;
+    --bs-btn-disabled-bg:#e14236;
+    --bs-btn-disabled-border-color:#e14236;
+}
+.btn-primary{
+    --bs-btn-active-bg: #000000;
+    --bs-btn-active-border-color: #000000;
+    
+}
+.btn-warning{
+    --bs-btn-disabled-opacity:1;
+    --bs-btn-bg:#FFB957;
+    --bs-btn-disabled-bg:#f5b827;
+    --bs-btn-disabled-border-color:#f5b827;
+}
+.btn-info{
+    --bs-btn-disabled-opacity:1;
+    --bs-btn-bg:#EFEFEF;
+    --bs-btn-border-color:#EFEFEF;
+    --bs-btn-hover-bg:#F0C800;
+    --bs-btn-hover-border-color:#F0C800;
+    --bs-btn-active-bg:#DBB700;
+    --bs-btn-active-border-color:#DBB700;
+}
+.btn-yid{
+    --bs-btn-disabled-opacity:1;
+    --bs-btn-bg:#93ba55;
+    --bs-btn-border-color:#93ba55;
+    --bs-btn-hover-bg:#89b04b;
+    --bs-btn-hover-border-color:#89b04b;
+    --bs-btn-active-bg:#6b922d;
+    --bs-btn-active-border-color:#6b922d;
+    padding: 2px;
+    width: 40%;
+    height: 1.8em;
+    text-justify: auto;
+    color: white;
+}
+.btnt{
+    --bs-btn-bg: #FF0000;
+    --bs-btn-hover-bg: #EA0000;
+    --bs-btn-active-bg:#EA0000;
+    color: red;
+}
+.btnt:hover{
+    color: white;
+}
+.bb{
+    display: inline;
+    line-height: 10px;
+}
+.notice{
+    margin: 0px;
+    font-size: 10px;
+    padding-top: 1px;
+}
+.task td {
+    height: 1.5em;
+    padding-top: 1.6em;
+    padding-bottom: 0px;
+}
+.mapdiv{
+    /* border: 1px white solid; */
+    margin-left: 1em;
+    margin-right: 1em;
+    border-radius: 0.6rem!important;
+    position: relative;
+    background-color: #3E3A39;
+}
+.map{
+    width: 100%;
+}
+.agv {
+    position: absolute;
+    width: 50px; /* 使用vw（視窗寬度的百分比）來定義寬度 */
+    transition: transform 0.3s ease;
+}
+.red{
+    color: #FF0000!important;
+}
+.agvstatusp{
+    margin-bottom: 0.7rem;
+}

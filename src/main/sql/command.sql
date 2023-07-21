@@ -1,0 +1,22 @@
+SHOW DATABASES;
+SHOW TABLES;
+SHOW VARIABLES LIKE 'port';
+SELECT DATABASE();
+DROP TABLE `analysis`;
+DROP TABLE `station_data`;
+drop table task_history;
+DROP TABLE `notification_history`;
+DROP TABLE `notification_title_data`;
+UPDATE `task_history` SET `status` = 100 WHERE (`task_number` = '#202306300008');
+select DISTINCT agv_id,analysis_id from analysis order by analysis_id DESC LIMIT 3;
+SELECT agv_id, MAX(analysis_id) FROM analysis WHERE agv_id IN (1, 2, 3) GROUP BY agv_id ORDER BY agv_id;
+
+SELECT * FROM task_history WHERE DATE_FORMAT(STR_TO_DATE(create_task_time, '%Y%m%d%H%i%s'), '%Y-%m-%d') = CURDATE() ORDER BY id DESC;
+SELECT * FROM task_history;
+SELECT * FROM analysis;
+SELECT * FROM analysis WHERE analysis_id = 184;
+SELECT year, month, day FROM analysis WHERE (year, month, day) <= (SELECT MAX(year), MAX(month), MAX(day) FROM analysis) ORDER BY year DESC, month DESC, day DESC LIMIT 1;
+SELECT agv_id, MAX(analysis_id) as analysis_id FROM analysis WHERE agv_id IN (1, 2, 3) GROUP BY agv_id ORDER BY agv_id;
+SELECT * FROM station_data;
+SELECT * FROM mode;
+SELECT * FROM notification_history WHERE DATE_FORMAT(STR_TO_DATE(create_time, '%Y%m%d%H%i%s'), '%Y-%m-%d') = CURDATE() ORDER BY id DESC;
