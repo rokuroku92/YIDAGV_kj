@@ -1,3 +1,29 @@
+body{
+    min-width: 760px;
+}
+.agvStatusDiv{
+    min-width: 254px;
+}
+.taskDiv{
+    min-width: 254px;
+}
+.stationDiv{
+    min-width: 507px;
+}
+.analysisDiv{
+    min-width: 507px;
+}
+.messageDiv{
+    min-width: 507px;
+    font-size: 14px;
+}
+.sendDiv{
+    min-width: 335px;
+    font-size: 14px;
+}
+.confirmDiv{
+    min-width: 155px;
+}
 .item {
   width: 25%;
   background-color: #E9FF66;
@@ -24,11 +50,13 @@
     padding-bottom: 2px;
 }
 .parse{
-    width:100%;
-    height:70px;
+    width: 100%;
+    height: 70px;
+    color: blue;
     text-align: center;
     background-color: #EFEFEF;
     border: 0;
+    border-radius: 0.6rem!important;
 }
 .btn-success{
     --bs-btn-disabled-opacity:1;
@@ -75,13 +103,13 @@
     color: white;
 }
 .btnt{
-    --bs-btn-bg: #FF0000;
-    --bs-btn-hover-bg: #EA0000;
-    --bs-btn-active-bg:#EA0000;
     color: red;
+    display: flex;
+    align-items: center;
+    padding: 2px;
 }
 .btnt:hover{
-    color: white;
+    color: rgb(150, 0, 0);
 }
 .bb{
     display: inline;
@@ -106,7 +134,8 @@
     background-color: #3E3A39;
 }
 .map{
-    width: 100%;
+    background-color: #FFFFFF;
+    padding: 2%;
 }
 .agv {
     position: absolute;
@@ -118,4 +147,18 @@
 }
 .agvstatusp{
     margin-bottom: 0.7rem;
+}
+.tasktitle{
+    height: 2em;
+    align-items: center;
+    font-size: 12px;
+}
+.taskcontent{
+    height: 3.3em;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+}
+.removebtncol{
+    padding: 0px;
 }

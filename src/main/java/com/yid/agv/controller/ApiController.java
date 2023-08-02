@@ -8,8 +8,10 @@ import com.yid.agv.model.AgvStatus;
 import com.yid.agv.service.AnalysisService;
 
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import com.yid.agv.service.HomePageService;
 import com.yid.agv.service.TaskService;
@@ -50,7 +52,27 @@ public class ApiController {
 //    }
     @GetMapping(value = "/homepage/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getTasksJson() {
-        return gson.toJson(ProcessTasks.getTaskQueue());
+//        return gson.toJson(ProcessTasks.getTaskQueue());
+        Queue<QTask> q = new ArrayDeque<>();
+        QTask t = new QTask();
+        t.setTaskNumber("#202308010001");
+        t.setAgvId(1);
+        t.setModeId(1);
+        t.setStartStationId(6);
+        t.setTerminalStationId(12);
+        t.setNotificationStationId(13);
+        t.setStatus(0);
+        QTask t2 = new QTask();
+        t2.setTaskNumber("#202308010002");
+        t2.setAgvId(1);
+        t2.setModeId(1);
+        t2.setStartStationId(7);
+        t2.setTerminalStationId(11);
+        t2.setNotificationStationId(11);
+        t2.setStatus(1);
+        q.offer(t);
+        q.offer(t2);
+        return gson.toJson(q);
     }
 
     @GetMapping(value = "/homepage/tasks/today", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,21 +87,31 @@ public class ApiController {
         return gson.toJson(list);
     }
 
-    @GetMapping(value = "/homepage/notification/today", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getTodayNotification(){
-        List<Notification> list = homePageService.queryTodayNotifications();
+    @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getNotifications(){
+        List<Notification> list = homePageService.queryNotifications();
         return gson.toJson(list);
     }
 
     @GetMapping(value = "/homepage/notification/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getAllNotification(){
+    public String getAllNotifications(){
         List<Notification> list = homePageService.queryAllNotifications();
         return gson.toJson(list);
     }
-
-    @GetMapping(value = "/homepage/stations", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-    public String getStations(){
+    @GetMapping(value = "/homepage/agvStatusData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getAgvStatusData(){
+        List<MessageData> list = homePageService.queryMessageData();
+        return gson.toJson(list);
+    }
+    @GetMapping(value = "/homepage/stationsData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getStationsData(){
         List<Station> list = homePageService.queryStations();
+        return gson.toJson(list);
+    }
+
+    @GetMapping(value = "/homepage/notificationStationsData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getNotificationStationsData(){
+        List<NotificationStation> list = homePageService.queryNotificationStations();
         return gson.toJson(list);
     }
 

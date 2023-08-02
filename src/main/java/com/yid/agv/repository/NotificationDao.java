@@ -12,5 +12,8 @@ public interface NotificationDao {
     List<Notification> queryNotificationsByDate(String date);
     
     List<Notification> queryAllNotifications();
+    List<Notification> queryNotifications();
+
+    void insertMessage(int titleId, int messageId);
     
 }

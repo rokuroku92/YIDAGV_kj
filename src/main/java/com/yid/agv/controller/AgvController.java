@@ -9,13 +9,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AgvController {
     
     @GetMapping(value = "/")
-    public String index() {
+    public String pageAgv() {
         return "agv";
     }
     
     @GetMapping(value = "/analysis")
-    public String index1() {
+    public String pageAnalysis() {
         return "analysis";
+    }
+
+    @GetMapping(value = "/message")
+    public String pageMessage() {
+        return "message";
     }
 
 

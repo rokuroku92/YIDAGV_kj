@@ -10,51 +10,31 @@
 		<title>元創智動AGV效益分析</title>
 		<!-- Bootstrap core CSS -->
 		<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+		<link th:href="@{/css/yid-basic.css}" rel="stylesheet">
+		<link th:href="@{/css/analysis.css}" rel="stylesheet">
 
-		<style>
-				  .parse{
-					  width:87%;
-					  height: 70px;
-					  background-color: #DEDEDE;
-					  text-align: center;
-					  border: 0;
-				  }
-				  @media print {
-					  .container-fluid{
-						  display: none;
-					  }
-					  .printt{
-						  display: flow;
-					  }
-				  }
-				  .btnt{
-					  color: white;
-				  }
-				  .btnt:hover{
-					  color: red;
-				  }
-				  .btn-yid{
-					  --bs-btn-disabled-opacity:1;
-					  --bs-btn-bg:#93ba55;
-					  --bs-btn-border-color:#93ba55;
-					  --bs-btn-hover-bg:#89b04b;
-					  --bs-btn-hover-border-color:#89b04b;
-					  --bs-btn-active-bg:#6b922d;
-					  --bs-btn-active-border-color:#6b922d;
-					  color: white;
-				  }
-	    </style>
 		<script th:src="@{/js/jquery-3.3.1.min.js}"></script>
-		<script th:src="@{/js/popper.min.js}"></script>
 		<script th:src="@{/js/bootstrap.min.js}"></script>
-		<script th:src="@{/js/bootstrap.table.min.js}"></script>
 		<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+		<script th:src="@{/js/popper.min.js}"></script>
 		<script th:src="@{/js/chart.js@4.3.0}"></script>
+		<script th:src="@{/js/bootstrap-table.min.js}"></script>
 		<script th:src="@{/js/yidagvanalysis.js}"></script>
 
 	</head>
-	<body onload="init()" style="padding: 0px;line-height: 10px;">
-		<img th:src="@{/image/2023AGVS_UI_1280_800_top_20230223.png}" alt="image error" style="max-width:100%;">
+	<body style="padding: 0px;line-height: 10px;">
+<!--		<img th:src="@{/image/2023AGVS_UI_1280_800_top_20230223.png}" alt="image error" style="max-width:100%;">-->
+		<div class="row Title">
+			<div class="col-4"></div>
+			<div class="col-4">
+                <img th:src="@{/image/yidlogo.svg}" alt="SVG Image" style="width: 10%;">
+                <img th:src="@{/image/yidlogotext.svg}" alt="SVG Image" style="width: 85%;">
+            </div>
+            <div class="col-4" style="position: relative;">
+                <img style="position: absolute;bottom: 0;right: 0;max-height: 45%;" th:src="@{/image/yidwww.svg}" alt="image error">
+            </div>
+		</div>
+		<hr style="border: none;height: 10px;background-color: #93B955;margin: 0px;margin-top: 3px;opacity: 1;">
 		<div class="container-fluid" style="padding: 20px;padding-left: 40px;padding-right: 40px;padding-bottom: 0px;">
 			<div class="row">
 				<div class="col">
@@ -146,12 +126,12 @@
 							</thead>
 							<tbody>
 							<tr style=" font-size: 1.5em">
-								<td><p><input style="color: blue;" class="parse" type="text" id="task_sum" readonly/></p></td>
-								<td><p><input style="color: blue;" class="parse" type="text" id="task" readonly/></p></td>
-								<td><p><input style="color: blue;" class="parse" type="text" id="open_sum" readonly/></p></td>
-								<td><p><input style="color: blue;" class="parse" type="text" id="work_sum" readonly/></p></td>
-								<td><p><input style="color: blue;" class="parse" type="text" id="work" readonly/></p></td>
-								<td><p><input style="color: blue;" class="parse" type="text" id="rate" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="task_sum" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="task" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="open_sum" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="work_sum" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="work" readonly/></p></td>
+								<td><p><input class="parse" type="text" id="rate" readonly/></p></td>
 							</tr>
 							</tbody>
 						</table>

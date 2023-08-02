@@ -8,16 +8,12 @@ import com.yid.agv.repository.AnalysisDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Random;
 
 @Component
 public class CountUtilizationRate {
-    private final String checkUrl = "http://example.com/checkPower"; // 替換成開機API網址
-    private final RestTemplate restTemplate = new RestTemplate();
     @Autowired
     private AnalysisDao analysisDao;
     @Autowired
@@ -25,11 +21,13 @@ public class CountUtilizationRate {
     private String lastDate;
     private List<AnalysisId> analysisIds;
 
+    public static boolean[] isPoweredOn; // AGV是否開機(由InstantStatus控制)
+    public static boolean[] isWorking; // AGV是否工作(由InstantStatus控制)
+
     @Scheduled(fixedRate = 60000) // 每分鐘執行一次
     public void checkAgvStatus() {
-        boolean[] isPoweredOn = checkPower(); // 檢查AGV是否開機
-        boolean[] isWorking = checkStatus(); // 檢查AGV是否工作
-
+        if (isPoweredOn == null) isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
+        if (isWorking == null) isWorking = new boolean[agvIdDao.queryAGVList().size()];
         // 現在時間
         LocalDate currentDate = LocalDate.now();
         String year = String.valueOf(currentDate.getYear());
@@ -61,31 +59,16 @@ public class CountUtilizationRate {
             if (isPoweredOn[i]) {
                 // AGV開機處理邏輯
                 analysisDao.updateOpenMinute(analysis.getOpenMinute()+1, analysisIds.get(i).getAnalysisId());
-                System.out.println("BootMinute++");
+//                System.out.println("BootMinute++");
+                if (isWorking[i]) {
+                    // AGV工作處理邏輯
+                    analysisDao.updateWorkingMinute(analysis.getWorkingMinute()+1, analysisIds.get(i).getAnalysisId());
+//                    System.out.println("WorkingMinute++");
+                } // AGV停止工作則不處理業務邏輯
             } // AGV未開機則不處理業務邏輯
 
-            if (isWorking[i]) {
-                // AGV工作處理邏輯
-                analysisDao.updateWorkingMinute(analysis.getWorkingMinute()+1, analysisIds.get(i).getAnalysisId());
-                System.out.println("WorkingMinute++");
-            } // AGV停止工作則不處理業務邏輯
         }
 
-    }
-    private boolean[] checkPower() {
-        // 發送HTTP請求至開機API網址，檢查網址的內容並返回結果
-        // 使用RestTemplate或其他HTTP客戶端進行請求，並解析回應內容
-        // 返回開機狀態，true表示開機，false表示未開機
-//        return restTemplate.getForObject(checkPowerUrl, Boolean.class);
-        return new boolean[]{true, true, true};
-    }
-
-    private boolean[] checkStatus() {
-        // 發送HTTP請求至工作API網址，檢查網址的內容並返回結果
-        // 使用RestTemplate或其他HTTP客戶端進行請求，並解析回應內容
-        // 返回工作狀態，true表示工作中，false表示停止工作
-//        return restTemplate.getForObject(checkStatusUrl, Boolean.class);
-        return new boolean[]{new Random().nextBoolean(), new Random().nextBoolean(), new Random().nextBoolean()};
     }
 
 }

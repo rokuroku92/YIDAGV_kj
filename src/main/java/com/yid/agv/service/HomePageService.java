@@ -1,10 +1,7 @@
 package com.yid.agv.service;
 
 import com.yid.agv.model.*;
-import com.yid.agv.repository.AGVIdDao;
-import com.yid.agv.repository.ModeDao;
-import com.yid.agv.repository.NotificationDao;
-import com.yid.agv.repository.StationDao;
+import com.yid.agv.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +17,10 @@ public class HomePageService {
     private NotificationDao notificationDao;
     
     @Autowired
-    private StationDao StationDao;
+    private StationDao stationDao;
+
+    @Autowired
+    private MessageDataDao messageDataDao;
     
     @Autowired
     private ModeDao modeDao;
@@ -41,10 +41,17 @@ public class HomePageService {
         return notificationDao.queryAllNotifications();
     }
 
-    public List<Station> queryStations(){
-        return StationDao.queryStations();
+    public List<Notification> queryNotifications(){
+        return notificationDao.queryNotifications();
     }
 
+    public List<Station> queryStations(){
+        return stationDao.queryStations();
+    }
+    public List<NotificationStation> queryNotificationStations(){
+        return stationDao.queryNotificationStations();
+    }
+    public List<MessageData> queryMessageData(){return messageDataDao.queryMessageData();}
 
     public List<Mode> queryModes(){
         return modeDao.queryModes();

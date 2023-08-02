@@ -3,9 +3,9 @@ package com.yid.agv.model;
 
 public class Notification {
     private Long id;
-    private String title;
-    private String content;
+    private String name;
     private int level;
+    private String content;
     private String createTime;
 
     public Long getId() {
@@ -16,20 +16,12 @@ public class Notification {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getLevel() {
@@ -40,6 +32,14 @@ public class Notification {
         this.level = level;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     public String getCreateTime() {
         return createTime;
     }
@@ -47,6 +47,4 @@ public class Notification {
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
     }
-
-   
 }

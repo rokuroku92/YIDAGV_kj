@@ -1,5 +1,8 @@
 var baseUrl = window.location.origin + "/YIDAGV";
 var myChart;
+window.onload = function(){
+    init();
+}
 function init(){
     let ctx = document.getElementById("myChart");
     myChart = new Chart(ctx, {
@@ -9,7 +12,7 @@ function init(){
 
                 ],
                 datasets: [{
-                    label:"稼動率",
+                    label:"稼動率(%)",
                     data: [
 
                     ],
@@ -20,7 +23,7 @@ function init(){
                     pointBackgroundColor: '#007bff'
                 },
                 {
-                    label:"任務數",
+                    label:"任務數(個)",
                     data: [
 
                     ],
@@ -30,13 +33,6 @@ function init(){
                     borderWidth: 3,
                     pointBackgroundColor: '#FFB957'
                     }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        display: false,
-                    }
-                },
             }
         });
     getYearsAndMonths();
@@ -88,11 +84,11 @@ function test(data) {
     var html = "";
     for(let i=0 ; i < data.length ; i++) {
         myChart.data.labels.push(data[i].month + '/' + data[i].day);
-        myChart.data.datasets[0].data.push(((data[i].workingHours/data[i].openHours)*100).toString().substring(0,2));
+        myChart.data.datasets[0].data.push(((data[i].workingMinute/data[i].openMinute)*100).toString().substring(0,2));
         myChart.data.datasets[1].data.push(data[i].task);
         task_sum += data[i].task;
-        work_sum += data[i].workingHours;
-        open_sum += data[i].openHours;
+        work_sum += data[i].workingMinute;
+        open_sum += data[i].openMinute;
         if(data[i].task>0)x++;
         let week = "";
         let datawd = "";
@@ -128,7 +124,7 @@ function test(data) {
         }
         // 列印之表格
         html += "<tr id=\""+data[i].month.toString()+data[i].day.toString()+"\"><th scope=\"row\">"+data[i].month + '/' + data[i].day+week+"</th><td>"+data[i].task+"</td><td>"+
-              ((data[i].workingHours/data[i].openHours)*100).toString().substring(0,2)+"%</td><td>"+data[i].workingHours+"</td><td>"+data[i].openHours+"</td>"+
+              String((data[i].workingMinute/data[i].openMinute)*100).substring(0,2)+"%</td><td>"+Math.floor(data[i].workingMinute/60)+"</td><td>"+Math.floor(data[i].openMinute/60)+"</td>"+
               "<td><input class=\"hh\" data-wd=\""+datawd+"\" type=\"checkbox\" id=\""+data[i].month.toString()+data[i].day.toString()+"d\" checked/></td></th>";
     }
     myChart.update();
@@ -136,7 +132,7 @@ function test(data) {
     document.getElementById("task").value = String((task_sum/x)*100).substring(0,2);
     document.getElementById("open_sum").value = String(Math.floor(open_sum/60))+"hr";
     document.getElementById("work_sum").value = String(Math.floor(work_sum/60))+"hr";
-    document.getElementById("work").value = String(work_sum/x).substring(0,4)+"hr";
+    document.getElementById("work").value = String((Math.floor(work_sum/60)/x).toFixed(1))+"hr";
     document.getElementById("rate").value = String((work_sum/open_sum)*100).substring(0,2)+"%";
     document.getElementById("pt").innerHTML = html;
     console.log(myChart.data);
@@ -183,6 +179,12 @@ function printOut() {
     });
     $('input[type=checkbox]').remove();
 
+
+    var sumAndAvgs = document.querySelectorAll('.parse');
+    sumAndAvgs.forEach(function(sumAndAvg) {
+        sumAndAvg.style.color = "#000000";
+        console.log("0000: ", sumAndAvg);
+    });
     var printOutContent = document.getElementById("printt").innerHTML;
     var printOutContent1 = document.getElementById("summ").innerHTML;
     document.body.innerHTML = printOutContent+printOutContent1;

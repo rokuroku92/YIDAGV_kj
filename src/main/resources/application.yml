@@ -2,3 +2,6 @@ jdbc:
   url: jdbc:mysql://localhost:3306/YIDAGV?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
   username: root
   password: 12345678
+
+agvControl:
+  url: http://10.11.33.69:20100
