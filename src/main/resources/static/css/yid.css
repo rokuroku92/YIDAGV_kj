@@ -45,9 +45,14 @@ body{
     font-size: 13px;
     text-align: center;
 }
-.starttd{
-    padding-top: 2px;
-    padding-bottom: 2px;
+.buttonrow{
+    height: 3.5em;
+    padding-top: 1.5%;
+    padding-bottom: 1.5%;
+}
+.buttonrow .col{
+    padding-left: 1.5%;
+    padding-right: 1.5%;
 }
 .parse{
     width: 100%;
@@ -118,7 +123,7 @@ body{
 .notice{
     margin: 0px;
     font-size: 10px;
-    padding-top: 1px;
+    padding-top: 2px;
 }
 .task td {
     height: 1.5em;

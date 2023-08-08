@@ -143,7 +143,7 @@ function updateAgvStatus(data){  // 更新資料
     for(let i=0;i<data.length;i++){
         // 工作狀態
         if (data[i].status >=0 && data[i].status <= 13) {
-            document.getElementById("status").value = agvStatusDict[data[i].status+1];
+            document.getElementById("status").value = agvStatusDict[data[i].status];
         }else{
             console.log("內容錯誤");
         }

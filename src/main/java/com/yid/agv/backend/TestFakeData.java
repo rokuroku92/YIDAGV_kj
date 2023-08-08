@@ -23,7 +23,11 @@ public class TestFakeData {
         Random random = new Random();
         String[] data = new String[10];
         for (int i = 0; i < data.length; i++) {
-            data[i] = Integer.toString(random.nextInt(2));
+            if(i%2==0)
+                data[i] = "1";
+            else
+                data[i] = "0";
+//            data[i] = Integer.toString(random.nextInt(2));
         }
         return Optional.of(data);
     }

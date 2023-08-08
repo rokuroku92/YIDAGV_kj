@@ -126,29 +126,29 @@
                                                 <img th:src="@{/image/icon_2.png}" alt="image error">
                                                 <label id="labelStartStation">出發站</label>
                                             </legend>
-                                            <table class="table table-borderless">
-                                                <tr>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s0" onclick="setStartStationNo(1)"><nobr>1-1</nobr></button><p class="notice" id="1-1b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s1" onclick="setStartStationNo(2)"><nobr>1-2</nobr></button><p class="notice" id="1-2b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s2" onclick="setStartStationNo(3)"><nobr>1-3</nobr></button><p class="notice" id="1-3b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s3" onclick="setStartStationNo(4)"><nobr>1-4</nobr></button><p class="notice" id="1-4b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s4" onclick="setStartStationNo(5)"><nobr>1-5</nobr></button><p class="notice" id="1-5b"></p></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s5" onclick="setStartStationNo(6)"><nobr>2-1</nobr></button><p class="notice" id="2-1b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s6" onclick="setStartStationNo(7)"><nobr>2-2</nobr></button><p class="notice" id="2-2b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s7" onclick="setStartStationNo(8)"><nobr>2-3</nobr></button><p class="notice" id="2-3b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s8" onclick="setStartStationNo(9)"><nobr>2-4</nobr></button><p class="notice" id="2-4b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s9" onclick="setStartStationNo(10)"><nobr>2-5</nobr></button><p class="notice" id="2-5b"></p></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s10" onclick="setStartStationNo(11)"><nobr>3-1</nobr></button><p class="notice" id="3-1b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s11" onclick="setStartStationNo(12)"><nobr>3-2</nobr></button><p class="notice" id="3-2b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s12" onclick="setStartStationNo(13)"><nobr>3-3</nobr></button><p class="notice" id="3-3b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s13" onclick="setStartStationNo(14)"><nobr>3-4</nobr></button><p class="notice" id="3-4b"></p></td>
-                                                    <td class="starttd"><button type="button" class="st btn" id="s14" onclick="setStartStationNo(15)"><nobr>3-5</nobr></button><p class="notice" id="3-5b"></p></td>
-                                                </tr>
-                                            </table>
+                                            <div class="container">
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st btn" id="s0" onclick="setStartStationNo(1)"><nobr>1-1</nobr></button><p class="notice" id="1-1b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s1" onclick="setStartStationNo(2)"><nobr>1-2</nobr></button><p class="notice" id="1-2b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s2" onclick="setStartStationNo(3)"><nobr>1-3</nobr></button><p class="notice" id="1-3b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s3" onclick="setStartStationNo(4)"><nobr>1-4</nobr></button><p class="notice" id="1-4b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s4" onclick="setStartStationNo(5)"><nobr>1-5</nobr></button><p class="notice" id="1-5b"></p></div>
+                                                </div>
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st btn" id="s5" onclick="setStartStationNo(6)"><nobr>2-1</nobr></button><p class="notice" id="2-1b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s6" onclick="setStartStationNo(7)"><nobr>2-2</nobr></button><p class="notice" id="2-2b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s7" onclick="setStartStationNo(8)"><nobr>2-3</nobr></button><p class="notice" id="2-3b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s8" onclick="setStartStationNo(9)"><nobr>2-4</nobr></button><p class="notice" id="2-4b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s9" onclick="setStartStationNo(10)"><nobr>2-5</nobr></button><p class="notice" id="2-5b"></p></div>
+                                                </div>
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st btn" id="s10" onclick="setStartStationNo(11)"><nobr>3-1</nobr></button><p class="notice" id="3-1b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s11" onclick="setStartStationNo(12)"><nobr>3-2</nobr></button><p class="notice" id="3-2b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s12" onclick="setStartStationNo(13)"><nobr>3-3</nobr></button><p class="notice" id="3-3b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s13" onclick="setStartStationNo(14)"><nobr>3-4</nobr></button><p class="notice" id="3-4b"></p></div>
+                                                    <div class="col"><button type="button" class="st btn" id="s14" onclick="setStartStationNo(15)"><nobr>3-5</nobr></button><p class="notice" id="3-5b"></p></div>
+                                                </div>
+                                            </div>
                                         </fieldset>
                                     </div>
                                 </div>
@@ -198,29 +198,29 @@
                                                 <img th:src="@{/image/icon_4.png}" alt="image error">
                                                 <label id="labelNotificationStation">通知站</label>
                                             </legend>
-                                            <table class="table table-borderless">
-                                                <tr>
-                                                    <td><button type="button" class="st1 btn disabled" id="PCB測試" onclick="setNotification(1)"><nobr>PCB測試</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn disabled" id="PCB外線" onclick="setNotification(2)"><nobr>PCB外線</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn disabled" id="PCB外AOI" onclick="setNotification(3)"><nobr>PCB外AOI</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn disabled" id="PCB網印" onclick="setNotification(4)"><nobr>PCB網印</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn disabled" id="CNC二廠" onclick="setNotification(5)"><nobr>CNC二廠</nobr></button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><button type="button" class="st1 btn btn-info" id="FQC" onclick="setNotification(6)"><nobr>FQC</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="BGA整面C" onclick="setNotification(7)"><nobr>BGA整面C</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="棕化" onclick="setNotification(8)"><nobr>棕化</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="內層線路" onclick="setNotification(9)"><nobr>內層線路</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="Suep" onclick="setNotification(10)"><nobr>Suep</nobr></button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><button type="button" class="st1 btn btn-info" id="FVI" onclick="setNotification(11)"><nobr>FVI</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="PCB噴塗" onclick="setNotification(12)"><nobr>PCB噴塗</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="BGA整面A" onclick="setNotification(13)"><nobr>BGA整面A</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="CNC一廠" onclick="setNotification(14)"><nobr>CNC一廠</nobr></button></td>
-                                                    <td><button type="button" class="st1 btn btn-info" id="Routing" onclick="setNotification(15)"><nobr>Routing</nobr></button></td>
-                                                </tr>
-                                            </table>
+                                            <div class="container">
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st1 btn disabled" id="PCB測試" onclick="setNotification(1)"><nobr>PCB測試</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn disabled" id="PCB外線" onclick="setNotification(2)"><nobr>PCB外線</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn disabled" id="PCB外AOI" onclick="setNotification(3)"><nobr>PCB外AOI</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn disabled" id="PCB網印" onclick="setNotification(4)"><nobr>PCB網印</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn disabled" id="CNC二廠" onclick="setNotification(5)"><nobr>CNC二廠</nobr></button></div>
+                                                </div>
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="FQC" onclick="setNotification(6)"><nobr>FQC</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="BGA整面C" onclick="setNotification(7)"><nobr>BGA整面C</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="棕化" onclick="setNotification(8)"><nobr>棕化</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="內層線路" onclick="setNotification(9)"><nobr>內層線路</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="Suep" onclick="setNotification(10)"><nobr>Suep</nobr></button></div>
+                                                </div>
+                                                <div class="row buttonrow">
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="FVI" onclick="setNotification(11)"><nobr>FVI</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="PCB噴塗" onclick="setNotification(12)"><nobr>PCB噴塗</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="BGA整面A" onclick="setNotification(13)"><nobr>BGA整面A</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="CNC一廠" onclick="setNotification(14)"><nobr>CNC一廠</nobr></button></div>
+                                                    <div class="col"><button type="button" class="st1 btn btn-info" id="Routing" onclick="setNotification(15)"><nobr>Routing</nobr></button></div>
+                                                </div>
+                                            </div>
                                         </fieldset>
                                     </div>
                                 </div>
