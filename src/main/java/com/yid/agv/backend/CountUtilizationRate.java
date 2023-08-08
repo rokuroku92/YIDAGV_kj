@@ -48,14 +48,9 @@ public class CountUtilizationRate {
             analysisIds = analysisDao.getTodayAnalysisId();
         }
 
-//        for (AnalysisId analysisId : analysisIds) {
-//            System.out.println(analysisId.getAgvId());
-//            System.out.println(analysisId.getAnalysisId());
-//        }
-
         for(int i=0;i<agvIdDao.queryAGVList().size();i++){
             // 執行相應的處理邏輯，如更新資料庫、記錄日誌等
-            Analysis analysis = analysisDao.queryAnalysisesByAnalysisId(analysisIds.get(i).getAnalysisId());
+            Analysis analysis = analysisDao.queryAnalysisByAnalysisId(analysisIds.get(i).getAnalysisId());
             if (isPoweredOn[i]) {
                 // AGV開機處理邏輯
                 analysisDao.updateOpenMinute(analysis.getOpenMinute()+1, analysisIds.get(i).getAnalysisId());

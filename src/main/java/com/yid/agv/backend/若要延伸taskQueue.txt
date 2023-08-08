@@ -1,0 +1,36 @@
+如果你需要為每台 AGV 創建獨立的任務佇列，你可以使用容器或 Map 來存儲這些任務佇列。每個 AGV 都擁有自己的任務佇列，可以通過 AGV 的唯一識別碼（例如 AGV 編號或 ID）來查找和操作對應的佇列。
+
+以下是一種可能的實現方式：
+
+1. 創建一個新的類別 `TaskQueueManager` 來管理多個任務佇列：
+
+```java
+@Component
+public class TaskQueueManager {
+    private final Map<String, TaskQueue> taskQueues;
+    private static final TaskQueueManager INSTANCE = new TaskQueueManager();
+
+    private TaskQueueManager() {
+        taskQueues = new HashMap<>();
+    }
+
+    public static TaskQueueManager getInstance() {
+        return INSTANCE;
+    }
+
+    public TaskQueue getTaskQueue(String agvId) {
+        return taskQueues.computeIfAbsent(agvId, key -> new TaskQueue());
+    }
+}
+```
+
+2. 修改 `TaskQueue` 類別，使其不再是單例，而是每個 AGV 都有自己的實例：
+
+```java
+public class TaskQueue {
+    // 這裡的代碼不變
+}
+```
+
+
+這樣每台 AGV 就會擁有自己的獨立任務佇列，它們之間相互獨立並且可以獨立操作。你可以根據 AGV 的數量動態創建和管理多個任務佇列，確保每台 AGV 都有自己的獨立任務佇列。

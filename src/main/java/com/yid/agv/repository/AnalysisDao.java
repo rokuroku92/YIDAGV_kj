@@ -10,13 +10,13 @@ import java.util.Map;
 
 public interface AnalysisDao {
     
-    List<Analysis> queryAnalysisesByAGV(Integer agvId);
+    List<Analysis> queryAnalysisByAGV(Integer agvId);
     
-    List<Analysis> queryAnalysisesRecentlyByAGV(Integer agvId);
+    List<Analysis> queryAnalysisRecentlyByAGV(Integer agvId);
     
-    List<Analysis> queryAnalysisesByAGVAndYearAndMonth(Integer agvId, Integer year, Integer month);
+    List<Analysis> queryAnalysisByAGVAndYearAndMonth(Integer agvId, Integer year, Integer month);
     
-    List<Map<String, Object>> getAnalysisesYearsAndMonths();
+    List<Map<String, Object>> getAnalysisYearsAndMonths();
 
     void insertNewDayAnalysis(String agvId, String year, String month, String day, String week);
 
@@ -24,7 +24,7 @@ public interface AnalysisDao {
 
     List<AnalysisId> getTodayAnalysisId();
 
-    Analysis queryAnalysisesByAnalysisId(Integer analysisId);
+    Analysis queryAnalysisByAnalysisId(Integer analysisId);
     void updateOpenMinute(Integer openMinute, Integer analysisId);
     void updateWorkingMinute(Integer workingMinute, Integer analysisId);
     void updateTask(Integer task, Integer analysisId);

@@ -21,6 +21,11 @@ public class StationDaoImpl implements StationDao {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Station.class));
     }
     @Override
+    public List<String> queryStandbyTags(){
+        String sql = "SELECT `tag` FROM `station_data` where `name` LIKE '%-10'";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+    @Override
     public List<NotificationStation> queryNotificationStations(){
         String sql = "SELECT * FROM `notification_station_data`";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(NotificationStation.class));

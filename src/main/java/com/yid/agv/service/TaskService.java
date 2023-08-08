@@ -1,8 +1,8 @@
 
 package com.yid.agv.service;
 
-import com.yid.agv.backend.InstantStatus;
-import com.yid.agv.backend.ProcessTasks;
+import com.yid.agv.backend.datastorage.StationManager;
+import com.yid.agv.backend.datastorage.TaskQueue;
 import com.yid.agv.model.QTask;
 import com.yid.agv.model.Task;
 import com.yid.agv.repository.TaskDao;
@@ -20,6 +20,11 @@ public class TaskService {
     
     @Autowired
     private TaskDao taskDao;
+
+    @Autowired
+    private StationManager stationManager;
+    @Autowired
+    private TaskQueue taskQueue;
     
     private String lastDate;
 
@@ -35,11 +40,8 @@ public class TaskService {
         return taskDao.queryAllTasks();
     }
 
-    public boolean updateTaskStatus(String taskNumber, int status){
-        return taskDao.updateTaskStatus(taskNumber, status);
-    }
     public boolean cancelTask(String taskNumber){
-        return ProcessTasks.removeTaskByTaskNumber(taskNumber) && taskDao.cancelTask(taskNumber);
+        return taskQueue.removeTaskByTaskNumber(taskNumber) && taskDao.cancelTask(taskNumber);
     }
 
     public boolean insertTaskAndAddTask(String time, String agv, String start, String notification, String mode) {
@@ -49,10 +51,10 @@ public class TaskService {
             ||notification.equals("")
             ||mode.equals("")) return false;
 
-        if (InstantStatus.stationStatuses[Integer.parseInt(start)-1].getStatus() != 1)
+        if (stationManager.getStationStatus(Integer.parseInt(start)).getStatus() != 1)
             return false;
         // getTerminal if not return false
-        Integer terminal = InstantStatus.getTerminalByNotification(notification);
+        Integer terminal = taskQueue.getTerminalByNotification(notification);
         if (terminal == null) return false;
 
         String lastTaskNumber = taskDao.selectLastTaskNumber();
@@ -82,7 +84,7 @@ public class TaskService {
         newTask.setNotificationStationId(Integer.parseInt(notification));
         newTask.setTerminalStationId(terminal);
 
-        return ProcessTasks.addTaskToQueue(newTask) &&
+        return taskQueue.addTaskToQueue(newTask) &&
                 taskDao.insertTask(taskNumber, time, agv, start, terminal.toString(), notification, mode);
 //        return ProcessTasks.addTaskToQueue(newTask) &&
 //                (("".equals(start)) ?

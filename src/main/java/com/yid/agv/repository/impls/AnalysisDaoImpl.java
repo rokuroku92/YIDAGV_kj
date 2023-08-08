@@ -17,25 +17,25 @@ public class AnalysisDaoImpl implements AnalysisDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Override
-    public List<Analysis> queryAnalysisesByAGV(Integer agvId){
+    public List<Analysis> queryAnalysisByAGV(Integer agvId){
         String sql = "select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
                      "from analysis a where agv_id=? order by year, month, day";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId);
     }
     @Override
-    public List<Analysis> queryAnalysisesRecentlyByAGV(Integer agvId){
+    public List<Analysis> queryAnalysisRecentlyByAGV(Integer agvId){
         String sql = "select * from (select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
                      "from analysis a where agv_id=? order by a.analysis_id DESC LIMIT 14)a order by analysis_id";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId);
     }
     @Override
-    public List<Analysis> queryAnalysisesByAGVAndYearAndMonth(Integer agvId, Integer year, Integer month){
+    public List<Analysis> queryAnalysisByAGVAndYearAndMonth(Integer agvId, Integer year, Integer month){
         String sql = "select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
                      "from analysis a where agv_id=? and year=? and month=? order by day";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId, year, month);
     }
     @Override
-    public List<Map<String, Object>> getAnalysisesYearsAndMonths(){
+    public List<Map<String, Object>> getAnalysisYearsAndMonths(){
         String sql = "select DISTINCT a.year,a.month from analysis a order by year, month";
         return jdbcTemplate.queryForList(sql);
     }
@@ -69,7 +69,7 @@ public class AnalysisDaoImpl implements AnalysisDao {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(AnalysisId.class));
     }
     @Override
-    public Analysis queryAnalysisesByAnalysisId(Integer analysisId){
+    public Analysis queryAnalysisByAnalysisId(Integer analysisId){
         String sql = "SELECT * FROM analysis WHERE analysis_id = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
             Analysis a = new Analysis();

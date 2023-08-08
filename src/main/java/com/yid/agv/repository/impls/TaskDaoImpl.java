@@ -30,7 +30,7 @@ public class TaskDaoImpl implements TaskDao {
     }
     @Override
     public String selectLastTaskNumber(){
-        String sql = "SELECT task_number FROM task_history ORDER BY task_number DESC LIMIT 1";
+        String sql = "SELECT task_number FROM task_history WHERE LENGTH(task_number) = 13 ORDER BY task_number DESC LIMIT 1";
         return jdbcTemplate.queryForObject(sql, String.class);
     }
     @Override

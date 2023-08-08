@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-    
 @Repository
 public class AGVIdDaoImpl implements AGVIdDao {
     @Autowired
@@ -19,5 +18,6 @@ public class AGVIdDaoImpl implements AGVIdDao {
         String sql = "SELECT * FROM `agv_data`";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(AGVId.class));
     }
-    
+
 }
+
