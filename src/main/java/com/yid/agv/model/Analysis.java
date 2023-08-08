@@ -1,5 +1,5 @@
 package com.yid.agv.model;
-
+// For Dao
 public class Analysis {
     private Long analysisId;
     private Integer agvId;

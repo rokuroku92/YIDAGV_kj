@@ -1,6 +1,6 @@
 package com.yid.agv.model;
 
-
+// For Dao
 /**
  * This is for Analysis to search last year, month, day */
 public class YearMonthDay {

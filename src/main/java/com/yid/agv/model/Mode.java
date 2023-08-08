@@ -1,6 +1,6 @@
 
 package com.yid.agv.model;
-
+// For Dao
 public class Mode {
     private Long id;
     private int mode;

@@ -1,6 +1,6 @@
 package com.yid.agv.model;
 
-
+// For Dao
 public class Task {
     private Long id;
     private String taskNumber;

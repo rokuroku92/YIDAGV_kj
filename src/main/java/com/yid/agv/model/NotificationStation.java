@@ -1,5 +1,5 @@
 package com.yid.agv.model;
-
+// For Dao
 public class NotificationStation {
     int id;
     String name;

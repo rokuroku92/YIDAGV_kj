@@ -1,5 +1,5 @@
 package com.yid.agv.model;
-
+// For Dao
 public class MessageData {
     private int id;
     private int level;

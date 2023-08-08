@@ -43,9 +43,9 @@ public class NotificationDaoImpl implements NotificationDao {
     }
 
     @Override
-    public void insertMessage(int titleId, int messageId){
+    public void insertMessage(Title title, Status messageStatus){
         String sql = "INSERT INTO `notification_history`(`title_id`, `message_id`) VALUES(?, ?)";
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
-        jdbcTemplate.update(sql, titleId, messageId);
+        jdbcTemplate.update(sql, title.getValue(), messageStatus.getValue());
     }
 }

@@ -69,11 +69,11 @@ public class ProcessTasks {
                 taskDao.updateTaskStatus(taskQueue.getNowTaskNumber(), 1);
             } else if (result.equals("FailedDispatch")) {
                 System.out.println("發送任務三次皆失敗，已取消任務");
-                notificationDao.insertMessage(1, 19);
+                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK_THREE_TIMES);
                 taskQueue.failedTask();
                 taskDao.cancelTask(taskQueue.getNowTaskNumber());
             }
-        }else if(taskQueue.iGoStandby() && false){
+        }else if(taskQueue.iGoStandby() && false){ // TODO: 這邊卡著不回待命點
             InstantStatus.iStandbyTask = true;
             InstantStatus.iTask = true;
             goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1));
@@ -87,7 +87,7 @@ public class ProcessTasks {
         while (retryCount < MAX_RETRY) {
             try {
                 if (task != null) {
-                    // TODO: Dispatch the task to the AGV control system
+                    // Dispatch the task to the AGV control system
                     String url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                             "&" + stationIdTagMap.get(task.getStartStationId()) + "&" + stationIdTagMap.get(task.getTerminalStationId());
                     // TODO: 看有沒有需要分成不一樣站點數的網址
@@ -127,7 +127,7 @@ public class ProcessTasks {
             } catch (IOException | InterruptedException e) {
                 System.out.println("發送任務失敗3秒後重新發送");
                 // 重新發送前增加延遲
-                notificationDao.insertMessage(1, 18);
+                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK);
                 isRetrying = true;
                 retryCount++;
                 if (retryCount < MAX_RETRY) {
@@ -147,7 +147,7 @@ public class ProcessTasks {
 
     public static void failedTask(TaskQueue taskQueue, NotificationDao notificationDao, TaskDao taskDao){
         System.out.println("任務執行三次皆失敗，已取消任務");
-        notificationDao.insertMessage(1, 17);
+        notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_EXECUTION_TASK_THREE_TIMES);
         taskDao.cancelTask(taskQueue.getNowTaskNumber());
         taskQueue.removeTaskByTaskNumber(taskQueue.getNowTaskNumber());
         taskQueue.setNowTaskNumber(null);

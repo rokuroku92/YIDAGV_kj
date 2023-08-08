@@ -1,6 +1,6 @@
 
 package com.yid.agv.model;
-
+// For Dao
 public class AGVId {
     private int id;
     private String name;

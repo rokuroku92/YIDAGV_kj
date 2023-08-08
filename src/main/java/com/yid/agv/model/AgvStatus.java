@@ -2,6 +2,22 @@ package com.yid.agv.model;
 
 public class AgvStatus {
 
+    public enum Status{
+        OFFLINE(1), ONLINE(2), MANUAL(3), REBOOT(4),
+        STOP(5), DERAIL(6), COLLIDE(7), OBSTACLE(8),
+        EXCESSIVE_TURN_ANGLE(9), WRONG_TAG_NUMBER(10), UNKNOWN_TAG_NUMBER(11),
+        EXCEPTION_EXCLUSION(12), SENSOR_ERROR(13), CHARGE_ERROR(14), ERROR_AGV_DATA(15);
+        private final int value;
+        Status(int value) {
+            this.value = value;
+        }
+
+        public int getValue(){
+            return value;
+        }
+
+    }
+
     private int status;
     private String task;
     private String place;
@@ -12,8 +28,8 @@ public class AgvStatus {
         return status;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
+    public void setStatus(Status status) {
+        this.status = status.getValue();
     }
 
     public String getTask() {

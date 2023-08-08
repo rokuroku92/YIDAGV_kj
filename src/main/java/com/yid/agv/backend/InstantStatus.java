@@ -56,7 +56,7 @@ public class InstantStatus {
             for (int i = 0; i < agvManager.getAgvLength(); i++) {
                 AgvStatus agvStatus = agvManager.getAgvStatus(i+1);
                 String[] data = agvStatusData[i].split(",");
-                int j = i + 2;
+                NotificationDao.Title agvTitle = NotificationDao.Title.AGV_1; // TODO: 目前只有一台車
                 // data[0] 車號
                 if (!Objects.equals(data[0], "-1")) {
                     CountUtilizationRate.isPoweredOn[i] = true;
@@ -71,7 +71,7 @@ public class InstantStatus {
 
                     if (taskStatus[7]) {
                         agvStatus.setTask("任務執行失敗");
-                        notificationDao.insertMessage(1, 16);
+                        notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_EXECUTION_TASK);
                         if (!iStandbyTask){
                             if(reDispatch < 3) {
                                 agvStatus.setTask("重新執行任務");
@@ -100,7 +100,7 @@ public class InstantStatus {
                                 // 任務完成(task完成)
                                 if(!iStandbyTask) {
                                     ProcessTasks.completedTask(taskQueue, analysisDao, taskDao);
-                                    // TODO: 這邊可以判斷是否還有任務，直接派回待命點，執行效率會更好，但寫在ProcessTasks邏輯較正確，目前實作在ProcessTasks。
+                                    // 這邊可以判斷是否還有任務，直接派回待命點，執行效率會更好，但寫在ProcessTasks邏輯較正確，目前實作在ProcessTasks。
                                     iTask = false;
                                 } else {
                                     iTask = false;
@@ -118,89 +118,89 @@ public class InstantStatus {
                                 switch (Integer.parseInt(data[5]) % 10) {
                                     case 0 -> {
                                         // AGV 重新啟動
-                                        agvStatus.setStatus(3);
-                                        notificationDao.insertMessage(j, 4);
+                                        agvStatus.setStatus(AgvStatus.Status.REBOOT);
+                                        notificationDao.insertMessage(agvTitle, NotificationDao.Status.REBOOT);
                                     }
                                     case 1 -> {
                                         // AGV 手動模式
-                                        agvStatus.setStatus(2);
-                                        notificationDao.insertMessage(j, 3);
+                                        agvStatus.setStatus(AgvStatus.Status.MANUAL);
+                                        notificationDao.insertMessage(agvTitle, NotificationDao.Status.MANUAL);
                                     }
                                     case 2 -> {
                                         // AGV 連線中(自動上位模式)
-                                        agvStatus.setStatus(1);
-                                        notificationDao.insertMessage(j, 2);
+                                        agvStatus.setStatus(AgvStatus.Status.ONLINE);
+                                        notificationDao.insertMessage(agvTitle, NotificationDao.Status.ONLINE);
                                     }
                                     default -> {
                                         // 系統異常資料
-                                        agvStatus.setStatus(0);
+                                        agvStatus.setStatus(AgvStatus.Status.ERROR_AGV_DATA);
                                         System.out.println("異常agv狀態資料");
-                                        notificationDao.insertMessage(1, 15);
+                                        notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
                                     }
                                 }
                             }
                             case 1 -> {
                                 // AGV 緊急停止
-                                agvStatus.setStatus(4);
-                                notificationDao.insertMessage(j, 5);
+                                agvStatus.setStatus(AgvStatus.Status.STOP);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.STOP);
                             }
                             case 2 -> {
                                 // AGV 出軌
-                                agvStatus.setStatus(5);
-                                notificationDao.insertMessage(j, 6);
+                                agvStatus.setStatus(AgvStatus.Status.DERAIL);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.DERAIL);
                             }
                             case 3 -> {
                                 // AGV 發生碰撞
-                                agvStatus.setStatus(6);
-                                notificationDao.insertMessage(j, 7);
+                                agvStatus.setStatus(AgvStatus.Status.COLLIDE);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.COLLIDE);
                             }
                             case 4 -> {
                                 // AGV 前有障礙
-                                agvStatus.setStatus(7);
-                                notificationDao.insertMessage(j, 8);
+                                agvStatus.setStatus(AgvStatus.Status.OBSTACLE);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.OBSTACLE);
                             }
                             case 5 -> {
                                 // AGV 轉向角度過大
-                                agvStatus.setStatus(8);
-                                notificationDao.insertMessage(j, 9);
+                                agvStatus.setStatus(AgvStatus.Status.EXCESSIVE_TURN_ANGLE);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.EXCESSIVE_TURN_ANGLE);
                             }
                             case 6 -> {
                                 // AGV 卡號錯誤
-                                agvStatus.setStatus(9);
-                                notificationDao.insertMessage(j, 10);
+                                agvStatus.setStatus(AgvStatus.Status.WRONG_TAG_NUMBER);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.WRONG_TAG_NUMBER);
                             }
                             case 7 -> {
                                 // AGV 未知卡號
-                                agvStatus.setStatus(10);
-                                notificationDao.insertMessage(j, 11);
+                                agvStatus.setStatus(AgvStatus.Status.UNKNOWN_TAG_NUMBER);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.UNKNOWN_TAG_NUMBER);
                             }
                             case 8 -> {
                                 // AGV 異常排除
-                                agvStatus.setStatus(11);
-                                notificationDao.insertMessage(j, 12);
+                                agvStatus.setStatus(AgvStatus.Status.EXCEPTION_EXCLUSION);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.EXCEPTION_EXCLUSION);
                             }
                             case 9 -> {
                                 // AGV 感知器偵測異常
-                                agvStatus.setStatus(12);
-                                notificationDao.insertMessage(j, 13);
+                                agvStatus.setStatus(AgvStatus.Status.SENSOR_ERROR);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.SENSOR_ERROR);
                             }
                             case 10 -> {
                                 // AGV 充電異常
-                                agvStatus.setStatus(13);
-                                notificationDao.insertMessage(j, 14);
+                                agvStatus.setStatus(AgvStatus.Status.CHARGE_ERROR);
+                                notificationDao.insertMessage(agvTitle, NotificationDao.Status.CHARGE_ERROR);
                             }
                             default -> {
                                 // 系統異常資料
-                                agvStatus.setStatus(0);
+                                agvStatus.setStatus(AgvStatus.Status.ERROR_AGV_DATA);
                                 System.out.println("異常agv狀態資料");
-                                notificationDao.insertMessage(1, 15);
+                                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
                             }
                         }
                         lastAgvStatusData[i] = data[5];
                     }
                 } else {
-                    agvStatus.setStatus(0);
-                    notificationDao.insertMessage(j, 1);
+                    agvStatus.setStatus(AgvStatus.Status.OFFLINE);
+                    notificationDao.insertMessage(agvTitle, NotificationDao.Status.OFFLINE);
                     CountUtilizationRate.isPoweredOn[i] = false;
                     CountUtilizationRate.isWorking[i] = false;
                 }
@@ -219,14 +219,14 @@ public class InstantStatus {
         for(int i=0;i<15 && stationValue.length >= 10;i++) {
             notBookedStationStatuses[i] = new StationStatus();
             if(i<5) {
-                notBookedStationStatuses[i].setStatus(6);
+                notBookedStationStatuses[i].setStatus(StationStatus.Status.DISABLE);
             } else {
                 // TODO: 這邊假設有無箱是在boolean[0]
                 boolean[] dataValue = parseStationStatus(Long.parseLong(stationValue[i-5]));
                 if (dataValue[0]) {
-                    notBookedStationStatuses[i].setStatus(1);
+                    notBookedStationStatuses[i].setStatus(StationStatus.Status.OWN_PALLET);
                 } else {
-                    notBookedStationStatuses[i].setStatus(0);
+                    notBookedStationStatuses[i].setStatus(StationStatus.Status.NOT_OWN_PALLET);
                 }
 
             }
@@ -237,23 +237,28 @@ public class InstantStatus {
             if(processBookedStation == 1 && notBookedStatus == 0){
                 // 錯誤，任務起始站棧板離開。
                 System.out.println("錯誤，任務起始站棧板離開。");
-                status.setStatus(3);
+                status.setStatus(StationStatus.Status.UNEXPECTED_PALLET);
                 // TODO: callStationAlarm
             }else if(processBookedStation == 1 && notBookedStatus == 1){
-                status.setStatus(2);
+                status.setStatus(StationStatus.Status.BOOKING);
             }else if(processBookedStation == 2 && notBookedStatus == 1){
                 // 錯誤，任務終點站上有其他棧板。
                 System.out.println("錯誤，任務終點站上有其他棧板。");
-                status.setStatus(3);
+                status.setStatus(StationStatus.Status.UNEXPECTED_PALLET);
                 // TODO: callStationAlarm
             }else if(processBookedStation == 2 && notBookedStatus == 0){
-                status.setStatus(2);
+                status.setStatus(StationStatus.Status.BOOKING);
             }else if(processBookedStation == 4 && notBookedStatus == 0){
                 taskQueue.setBookedStation(i+1, 0);
             }else if(processBookedStation == 4 && notBookedStatus == 1){
-                status.setStatus(4);
+                status.setStatus(StationStatus.Status.COMPLETED);
             }else {
-                status.setStatus(notBookedStatus);
+                switch (notBookedStatus){
+                    case 0 -> status.setStatus(StationStatus.Status.NOT_OWN_PALLET);
+                    case 1 -> status.setStatus(StationStatus.Status.OWN_PALLET);
+                    case 6 -> status.setStatus(StationStatus.Status.DISABLE);
+                }
+
             }
         }
     }
@@ -280,7 +285,7 @@ public class InstantStatus {
             CountUtilizationRate.isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
             CountUtilizationRate.isWorking = new boolean[agvIdDao.queryAGVList().size()];
             if(iCon){
-                notificationDao.insertMessage(1, 1);
+                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.OFFLINE);
                 iCon=false;
             }
         }
