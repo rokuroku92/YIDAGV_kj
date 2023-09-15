@@ -17,11 +17,13 @@ window.onload = async function(){
     bindEl();
 
     getAgvStatus();
-     getTasks();
+    getTasks();
+    getCompletedTasks();
     getStationStatus();
     getAnalysis();
     setInterval(getAgvStatus, 1000);
-     setInterval(getTasks, 1000);
+    setInterval(getTasks, 1000);
+    setInterval(getCompletedTasks, 1000);
     setInterval(getStationStatus, 1000);
     setInterval(getAnalysis, 60000);
 };
@@ -112,6 +114,19 @@ function getTasks() {
     };
 }
 
+function getCompletedTasks() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', baseUrl + "/api/homepage/completedTasks", true);
+    xhr.send();
+    xhr.onload = function(){
+        if(xhr.status == 200){
+            var data = JSON.parse(this.responseText);
+//            console.log(data);
+            updateCompletedTasks(data);
+        }
+    };
+}
+
 function getStationStatus() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', baseUrl + "/api/homepage/station", true);
@@ -191,6 +206,15 @@ function updateTasks(data){
     }
 }
 
+function updateCompletedTasks(data){
+    for(let i=1;i<=15;i++){
+        if(data[i] != 0){
+            console.log("gg");
+            document.getElementById(stationsDict[String(i)]+"b").innerHTML = notificationDict[data[i]];
+        }
+    }
+}
+
 
 function updateStationStatus(data){
     // 更改站點按鈕顏色
@@ -221,6 +245,7 @@ function updateStationStatus(data){
                 console.log(`內容錯誤: ${data[i].status}.`);
         }
     }
+    checkStartInput();
 }
 
 function bindEl(){
@@ -269,71 +294,48 @@ function updateLan(lan) {
     }
 }
 
+function checkStartInput() {
+    const value = document.getElementById('ststation').value;
+    
+    if (!isNaN(value) && value !== "") {
+        const stationElement = document.getElementById("s" + (parseInt(value) + 1));
+        
+        if (stationElement) {
+            const stationClasses = stationElement.classList;
+            
+            if (stationClasses.contains('disable')) {
+                document.getElementById("ststation").value = "";
+                document.getElementById("ststationText").value = "";
+            }
+        }
+    }
+}
+
+function checkStartAndTerminalInput() {
+    const startValue = $('#ststation').val();
+    const terminalValue = $('#notificationstation').val();
+
+    if (!isNaN(startValue) && startValue !== "" && !isNaN(terminalValue) && terminalValue !== "") {
+        const startRange = Math.floor((parseInt(startValue) - 1) / 5) + 1;
+        const terminalRange = Math.floor((parseInt(terminalValue) - 1) / 5) + 1;
+
+        if (startRange === terminalRange) {
+            cn();
+        }
+    }
+}
+
 function setStartStationNo(no) {
     document.getElementById('ststation').value = no;
     document.getElementById('ststationText').value = stationsDict[no];
+    checkStartInput();
+    checkStartAndTerminalInput();
 }
 
 function setNotification(no) {
-    // if(no<1520){
-    //     document.getElementById('noticestation').value = 1501;
-    // }else if(no>1520&&no<1530){
-    //     document.getElementById('noticestation').value = 1507;
-    // }else{
-    //     document.getElementById('noticestation').value = 1010;
-    // }
-
-    // var noText  = '';
-    // switch(no) {
-    //     case 1511:
-    //         noText = 'PCB測試';
-    //         break;
-    //     case 1512:
-    //         noText = 'PCB外線';
-    //         break;
-    //     case 1513:
-    //         noText = 'PCB外AOI';
-    //         break;
-    //     case 1514:
-    //         noText = 'PCB網印';
-    //         break;
-    //     case 1515:
-    //         noText = 'CNC二廠';
-    //         break;
-    //     case 1521:
-    //         noText = 'FQC';
-    //         break;
-    //     case 1522:
-    //         noText = 'BGA整面C';
-    //         break;
-    //     case 1523:
-    //         noText = '棕化';
-    //         break;
-    //     case 1524:
-    //         noText = '內層線路';
-    //         break;
-    //     case 1525:
-    //         noText = 'Suep';
-    //         break;
-    //     case 1531:
-    //         noText = 'FVI';
-    //         break;
-    //     case 1532:
-    //         noText = 'PCB噴塗';
-    //         break;
-    //     case 1533:
-    //         noText = 'BGA整面A';
-    //         break;
-    //     case 1534:
-    //         noText = 'CNC一廠';
-    //         break;
-    //     case 1535:
-    //         noText = 'Routing';
-    //         break;
-    // }
-    // document.getElementById('noticestationText').value = noText;
     document.getElementById('notificationstation').value = no;
     document.getElementById('notificationstationText').value = notificationDict[no];
+    checkStartAndTerminalInput();
 }
 // 紀錄確認列與發送
 function subm(){
@@ -341,7 +343,7 @@ function subm(){
     var nowTime = ""+now.getFullYear()+("0"+(now.getMonth()+1)).slice(-2)+("0"+now.getDate()).slice(-2)+
                     ("0"+now.getHours()).slice(-2)+("0"+now.getMinutes()).slice(-2)+("0"+now.getSeconds()).slice(-2);
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', baseUrl+"/api/sendTask?time="+nowTime+"&agv=1&start="+document.getElementById('ststation').value+"&notification="+document.getElementById('notificationstation').value+"&mode=1", true);
+    xhr.open('GET', baseUrl+"/api/sendTask?time="+nowTime+"&agv=1&start="+document.getElementById('ststation').value+"&notification="+document.getElementById('notificationstation').value+"&mode=0", true);
     xhr.send();
     xhr.onload = function(){
         if(xhr.status == 200){
@@ -375,7 +377,7 @@ function countRate(data) {
     }
     document.getElementById("work_sum").value = String(Math.floor(work_sum/60))+"hr";
     document.getElementById("open_sum").value = String(Math.floor(open_sum/60))+"hr";
-    document.getElementById("rate").value = String((work_sum/open_sum)*100).substring(0,2)+"%";
+    document.getElementById("rate").value = String(((work_sum/open_sum)*100).toFixed(1))+"%";
     document.getElementById("task_sum").value = task_sum;
 }
 

@@ -8,7 +8,11 @@ import java.util.List;
 public interface NotificationDao {
 
     enum Title{
-        AGV_SYSTEM(1), AGV_1(2), AGV_2(3);
+        AGV_SYSTEM(1), AGV_1(2), AGV_2(3), CALLER_1(4),
+        CALLER_2(5), CALLER_3(6), CALLER_4(7), CALLER_5(8),
+        CALLER_6(9), CALLER_7(10), CALLER_8(11), CALLER_9(12),
+        CALLER_10(13), CALLER_11(14), CALLER_12(15), CALLER_13(16),
+        CALLER_14(17);
         private final int value;
         Title(int value) {
             this.value = value;

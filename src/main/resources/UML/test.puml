@@ -1,0 +1,75 @@
+@startuml
+
+package com.yid.agv.backend {
+    [ProcessTasks] --> [agvUrlValue]
+    [ProcessTasks] --> [taskDao]
+    [ProcessTasks] --> [stationDao]
+    [ProcessTasks] --> [analysisDao]
+    [ProcessTasks] --> [notificationDao]
+    [ProcessTasks] --> [taskQueue]
+    [ProcessTasks] --> [agvManager]
+
+    [ProcessTasks] --> [stationIdTagMap]
+    [ProcessTasks] --> [toStandbyTask]
+}
+
+[ProcessTasks] --> [_init]
+
+[ProcessTasks] --> [isRetrying]
+[ProcessTasks] --> [dispatchTasks]
+
+[ProcessTasks] --> [dispatchTaskToAGV]
+[ProcessTasks] --> [failedTask]
+[ProcessTasks] --> [completedTask]
+[ProcessTasks] --> [goStandbyTaskByAgvId]
+[ProcessTasks] --> [failedGoStandbyTask]
+[ProcessTasks] --> [completedGoStandbyTask]
+
+[ProcessTasks] --> [taskQueue]
+[taskQueue] --> [peekTaskWithPlace]
+[taskQueue] --> [updateTaskStatus]
+[taskQueue] --> [failedTask]
+[taskQueue] --> [cancelTask]
+[taskQueue] --> [iDispatch]
+[taskQueue] --> [iGoStandby]
+[taskQueue] --> [completedTask]
+[taskQueue] --> [removeTaskByTaskNumber]
+[taskQueue] --> [setNowTaskNumber]
+[taskQueue] --> [getNowTaskNumber]
+[taskQueue] --> [getTaskByTaskNumber]
+[taskQueue] --> [setBookedStation]
+
+[agvManager] --> [getAgvStatus]
+
+[notificationDao] --> [insertMessage]
+
+[taskDao] --> [updateTaskStatus]
+[taskDao] --> [cancelTask]
+[taskDao] --> [insertTask]
+
+[stationDao] --> [queryStations]
+
+[analysisDao] --> [getTodayAnalysisId]
+[analysisDao] --> [updateTask]
+[analysisDao] --> [queryAnalysisByAnalysisId]
+
+[dispatchTasks] --> [agvManager.getAgvStatus]
+[dispatchTasks] --> [dispatchTaskToAGV]
+[dispatchTasks] --> [updateTaskStatus]
+[dispatchTasks] --> [cancelTask]
+
+[dispatchTaskToAGV] --> [HttpClient]
+[dispatchTaskToAGV] --> [notificationDao]
+[dispatchTaskToAGV] --> [task.getStartStationId]
+[dispatchTaskToAGV] --> [stationIdTagMap.get]
+
+[goStandbyTaskByAgvId] --> [notificationDao]
+[goStandbyTaskByAgvId] --> [taskDao]
+
+[completedTask] --> [taskQueue]
+[completedTask] --> [analysisDao]
+[completedTask] --> [taskDao]
+
+[completedGoStandbyTask] --> [taskDao]
+
+@enduml

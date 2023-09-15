@@ -157,12 +157,21 @@ body{
     height: 2em;
     align-items: center;
     font-size: 12px;
+    width: 100%;
+    margin: 0px;
 }
 .taskcontent{
     height: 3.3em;
     justify-content: center;
     align-items: center;
     font-size: 10px;
+    width: 100%;
+    margin: 0px;
+}
+.taskcontent .col-2,
+.taskcontent .col-3,
+.taskcontent .col-4 {
+    padding: 3px;
 }
 .removebtncol{
     padding: 0px;

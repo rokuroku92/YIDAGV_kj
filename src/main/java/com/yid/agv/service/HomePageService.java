@@ -1,5 +1,7 @@
 package com.yid.agv.service;
 
+import com.yid.agv.backend.datastorage.AGVManager;
+import com.yid.agv.backend.datastorage.StationManager;
 import com.yid.agv.model.*;
 import com.yid.agv.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,21 @@ public class HomePageService {
     
     @Autowired
     private ModeDao modeDao;
+
+    @Autowired
+    private AGVManager agvManager;
+
+    @Autowired
+    private StationManager stationManager;
     
+    public AgvStatus[] getAgvStatus(){
+        return agvManager.getAgvStatusCopyArray();
+    }
+
+    public StationStatus[] getStationStatus(){
+        return stationManager.getStationStatusCopyArray();
+    }
+
     public List<AGVId> queryAGVList(){
         return agvIdDao.queryAGVList();
     }

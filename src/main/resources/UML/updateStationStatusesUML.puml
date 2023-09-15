@@ -1,0 +1,76 @@
+@startuml
+start
+note right
+  ====
+  這是InstantStatus.java中的
+  updateStationStatuses
+  該方法使用@Scheduled
+  排程到Spring Boot
+  每秒執行
+  ====
+  last edit: 20230822
+  ====
+end note
+:抓取站點狀態、任務佇列的BookingStation;
+if (AGV系統是否連線) then (true)
+  :站點迴圈(迭代站);
+  repeat
+    if (有無棧板(dataValue[0])) then (true)
+      :設定未過濾站點資料為
+                 有棧板;
+    else (false)
+      :設定未過濾站點資料為
+                 無棧板;
+    endif
+
+    if (該站被預訂為起始站
+         且 無棧板) then (true)
+      :設置StationStatus為
+      UNEXPECTED_PALLET;
+      :播報錯誤警報;
+    else if (該站被預訂為起始站
+         且 有棧板) then (true)
+      :設置StationStatus為
+             BOOKING;
+      :停止播報錯誤警報;
+    else if (該站被預訂為終點站
+         且 有棧板) then (true)
+      :設置StationStatus為
+      UNEXPECTED_PALLET;
+      :播報錯誤警報;
+    else if (該站被預訂為終點站
+         且 無棧板) then (true)
+      :設置StationStatus為
+             BOOKING;
+      :停止播報錯誤警報;
+    else if (該站被預訂為完成放置
+         且 有棧板) then (true)
+      :設置StationStatus為
+           COMPLETED;
+      :播報通知站警報;
+    else if (該站被預訂為完成放置
+             且 無棧板) then (true)
+      :清除站點被預訂的狀態
+          (已完成此次轉移);
+      :停止播報通知站警報;
+    else (沒有被預訂的車位)
+      switch (未被預訂的車站)
+        case (無棧板)
+          :設置StationStatus為
+           NOT_OWN_PALLET;
+        case (有棧板)
+          :設置StationStatus為
+              OWN_PALLET;
+        case (禁用)
+          :設置StationStatus為
+                  DISABLE;
+      endswitch
+    endif
+  repeat while (有下個站點) is (true) not (false)
+
+else (false)
+  stop
+
+endif
+stop
+@enduml

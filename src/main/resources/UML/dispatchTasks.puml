@@ -1,0 +1,51 @@
+@startuml
+start
+note right
+  ====
+  這是ProcessTasks.java中的
+  dispatchTasks
+  該方法使用@Scheduled
+  排程到Spring Boot
+  每5秒執行
+  ====
+  last edit: 20230822
+  ====
+end note
+
+if (isRetrying(正在發送任務)) then (true)
+  stop
+else (false)
+  if (是否可以被派遣
+1. 目前沒有執行任務iTask=false
+2. 任務佇列不為空) then (true)
+    :取得任務;
+  else if (是否要回到待命點
+1. 目前沒有執行任務iTask=false
+2. 任務佇列為空
+3. 不在待命點上) then (true)
+    :  iStandbyTask=true
+    取得AGV回待命點的任務;
+  else
+    stop
+  endif
+  :         派遣任務
+      (dispatchTaskToAGV);
+      note left
+            是一個方法，
+            若API回覆不是"OK"
+            則會自動重複執行。
+            重複執行時，
+            isRetrying=true，
+            最多三次。
+            (此動作會卡住dispatchTasks執行緒最多9秒)
+      end note
+      if (是否成功發送任務) then (true)
+        :更新任務狀態並計入資料庫;
+      else (false)
+        :任務失敗(三次，三次的作業實作在派遣任務);
+      endif
+
+
+stop
+
+@enduml

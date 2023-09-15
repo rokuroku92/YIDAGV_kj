@@ -39,7 +39,7 @@ public class TaskDaoImpl implements TaskDao {
                        "VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
-        int rowsAffected = jdbcTemplate.update(sql, taskNumber, createTime, agv, start, terminal, notification, mode);
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, createTime, agv, start, terminal, notification, mode+1);
         return (rowsAffected > 0);
     }
     @Override

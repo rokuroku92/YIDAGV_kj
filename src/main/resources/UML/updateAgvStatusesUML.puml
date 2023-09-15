@@ -1,0 +1,99 @@
+@startuml
+start
+note right
+  ====
+  這是InstantStatus.java中的
+  updateAgvStatuses
+  該方法使用@Scheduled
+  排程到Spring Boot
+  每秒執行
+  ====
+  last edit: 20230822
+  ====
+end note
+:抓取AGV狀態;
+if (AGV系統是否連線) then (true)
+  :AGV迴圈(迭代)(目前只有一台);
+  repeat
+    :取得第i台AGVStatus物件實例(用於web資料顯示);
+    :更新AGV: 位置、電量、訊號;
+    :查看當前任務狀態;
+    if(任務狀態為PRE_START_STATION) then (true)
+      if(目前位置=任務起始站) then (true)
+        :取消起始站Booked;
+        :設置任務狀態為PRE_TERMINAL_STATION;
+      else (false)
+      endif
+    else if (任務狀態為PRE_TERMINAL_STATION) then (true)
+      if(目前位置=任務終點站) then (true)
+        :取消終點站Booked;
+        :設置任務狀態為COMPLETED;
+      else (false)
+      endif
+    else
+    endif
+    if (任務是否執行失敗
+  (taskStatus[7])) then (true)
+      :任務失敗計入資料庫;
+      if (是否為待命點任務
+  (iStandbyTask)) then (true)
+        :執行待命點任務失敗
+             iTask=false
+        iStandbyTask=false;
+      else (false)
+        if (重新派發任務
+是否超過三次) then (true)
+          :失敗三次(reDispatch==3)
+            刪除任務並計入資料庫
+                    iTask=false
+                  reDispatch=0;
+        else (false)
+          if (ProcessTasks.isRetrying) then (false)
+            :重新派發任務
+              計入資料庫
+            reDispatch++;
+            note right
+              建立一個自動回收的執行緒
+              派遣剛剛失敗的任務
+              使用ProcessTasks的派遣方法
+            end note
+          else (true)
+          endif
+        endif
+      endif
+    else (false)
+      if (是否正在執行任務
+  (taskStatus[0])) then (true)
+        if (是否為待命點任務
+  (iStandbyTask)) then (true)
+        else (false)
+          :設置AGV目前任務(UI)
+            開始計算稼動率;
+        endif
+        :iTask=true;
+      else (false)
+        :設置AGV目前任務為空(UI)
+             停止計算稼動率;
+        if (是否在任務中
+     (iTask)) then (true)
+          if (是否為待命點任務
+  (iStandbyTask)) then (true)
+            :完成待命點任務;
+          else (false)
+            :完成任務;
+          endif
+          :iTask=false;
+        else (false)
+        endif
+      endif
+    endif
+    :更新AGV狀態，並將未重複的狀態計入資料庫;
+    repeat while (還有下一台車) is (true) not (false)
+
+else (false)
+ stop
+endif
+
+stop
+
+@enduml

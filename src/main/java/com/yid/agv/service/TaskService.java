@@ -1,6 +1,7 @@
 
 package com.yid.agv.service;
 
+import com.yid.agv.backend.InstantStatus;
 import com.yid.agv.backend.datastorage.StationManager;
 import com.yid.agv.backend.datastorage.TaskQueue;
 import com.yid.agv.model.QTask;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TaskService {
@@ -27,6 +30,14 @@ public class TaskService {
     private TaskQueue taskQueue;
     
     private String lastDate;
+
+    public Map<Integer, Integer> getCompletedTasksMap() {
+        return InstantStatus.getCallerStationStatusMap();
+    }
+
+    public Collection<QTask> getTaskQueue(){
+        return taskQueue.getTaskQueueCopy();
+    }
 
     public List<Task> queryTodayTasks(){
         return taskDao.queryTodayTasks();
@@ -53,7 +64,7 @@ public class TaskService {
 
         if (stationManager.getStationStatus(Integer.parseInt(start)).getStatus() != 1)
             return false;
-        // getTerminal if not return false
+        // getTerminal if not, return false
         Integer terminal = taskQueue.getTerminalByNotification(notification);
         if (terminal == null) return false;
 

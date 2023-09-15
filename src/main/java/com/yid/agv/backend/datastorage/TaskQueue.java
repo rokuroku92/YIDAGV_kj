@@ -4,19 +4,19 @@ package com.yid.agv.backend.datastorage;
 import com.yid.agv.backend.InstantStatus;
 import com.yid.agv.model.QTask;
 import com.yid.agv.repository.StationDao;
+import com.yid.agv.repository.TaskDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Component
 public class TaskQueue {
     @Autowired
     private StationDao stationDao;
+    @Autowired
+    private TaskDao taskDao;
     @Autowired
     private AGVManager agvManager;
     @Autowired
@@ -28,6 +28,7 @@ public class TaskQueue {
     private TaskQueue() {
         taskQueue = new ConcurrentLinkedDeque<>();
         bookedStation = new int[15];
+        nowTaskNumber = "";
     }
 
     @SuppressWarnings("unused")
@@ -38,18 +39,19 @@ public class TaskQueue {
 
 
     public boolean iDispatch(){
-        return !InstantStatus.iTask && !InstantStatus.iStandbyTask && !taskQueue.isEmpty();
+        return !InstantStatus.iTask && !InstantStatus.iStandbyTask && !taskQueue.isEmpty() && nowTaskNumber.equals("");
     }
 
     public boolean iGoStandby(){
-        int place = Integer.parseInt(agvManager.getAgvStatus(1).getPlace());
+        int place = Integer.parseInt(agvManager.getAgvStatus(1).getPlace() == null ? "-1" : agvManager.getAgvStatus(1).getPlace());
         if (place == -1) return false;
 
         List<String> standbyTags = stationDao.queryStandbyTags();
         boolean iEquals = false;
 
         for (String standbyTag : standbyTags) {
-            if (Integer.parseInt(standbyTag) == place)
+            if (Integer.parseInt(standbyTag) == place
+                    || Integer.parseInt(standbyTag)-500 == place)
                 iEquals = true;
         }
         return !InstantStatus.iTask && taskQueue.isEmpty() && !iEquals;
@@ -86,28 +88,62 @@ public class TaskQueue {
         return null;
     }
 
+
+    private final int[] stationTag1 = new int[]{1501, 1252, 1254, 1256, 1258, 1260};
+    private final int[] stationTag2 = new int[]{1524, 1513, 1515, 1517, 1771, 1773};
     public QTask peekTaskWithPlace() {
         if(taskQueue.isEmpty())return null;
         int place = Integer.parseInt(agvManager.getAgvStatus(1).getPlace()); // 只有一台車id=1
-        int start, end;
-        if (place >= 1001 && place <= 1050){
-            start = 1;end = 5;
-        } else if (place > 1050 && place <= 1100) {
-            start = 6;end = 10;
-        } else if (place > 1100 && place <= 1150) {
-            start = 11;end = 15;
-        }else return null;
+        int start = -1, end = -1;
+//        if (place >= 1001 && place <= 1050){
+//            start = 1;end = 5;
+//        } else if (place > 1050 && place <= 1100 || place == 1200) {
+//            start = 6;end = 10;
+//        } else if (place > 1100 && place <= 1250) {
+//            start = 11;end = 15;
+//        }else return null;
+
+        for (int tag: stationTag1) {
+            if (place == tag) {
+                start = 6;
+                end = 10;
+                break;
+            }
+        }
+        if(start == -1){
+            for (int tag: stationTag2) {
+                if (place == tag) {
+                    start = 11;
+                    end = 15;
+                    break;
+                }
+            }
+        }
+        if(start == -1){
+            QTask task = taskQueue.peek();
+            nowTaskNumber = Objects.requireNonNull(task).getTaskNumber();
+            InstantStatus.startStation = task.getStartStationId();
+            InstantStatus.terminalStation = task.getTerminalStationId();
+            InstantStatus.taskProgress = InstantStatus.TaskProgress.PRE_START_STATION;
+            return task;
+        }
 
         for (QTask task : taskQueue) {
             Integer startStation = task.getStartStationId();
             if(startStation >= start && startStation <= end){
                 nowTaskNumber = task.getTaskNumber();
+                InstantStatus.startStation = task.getStartStationId();
+                InstantStatus.terminalStation = task.getTerminalStationId();
+                InstantStatus.taskProgress = InstantStatus.TaskProgress.PRE_START_STATION;
                 return task;
             }
         }
 
         QTask task = taskQueue.peek();
         nowTaskNumber = Objects.requireNonNull(task).getTaskNumber();
+        InstantStatus.startStation = task.getStartStationId();
+        InstantStatus.terminalStation = task.getTerminalStationId();
+        InstantStatus.taskProgress = InstantStatus.TaskProgress.PRE_START_STATION;
         return task;
     }
 
@@ -133,14 +169,15 @@ public class TaskQueue {
                 taskIterator.remove();
                 bookedStation[task.getStartStationId()-1] = 0;
                 bookedStation[task.getTerminalStationId()-1] = 0;
-                nowTaskNumber = null;
+                nowTaskNumber = "";
             }
         }
+        taskDao.cancelTask(nowTaskNumber);
     }
 
     public void completedTask() {
         taskQueue.removeIf(task -> task.getTaskNumber().equals(nowTaskNumber));
-        nowTaskNumber=null;
+        taskDao.updateTaskStatus(nowTaskNumber, 100);
     }
 
     public QTask getTaskByTaskNumber(String taskNumber) {
@@ -156,6 +193,7 @@ public class TaskQueue {
                 task.setStatus(status);
             }
         }
+        taskDao.updateTaskStatus(nowTaskNumber, status);
     }
 
     public String getNowTaskNumber() {
@@ -172,6 +210,10 @@ public class TaskQueue {
 
     public void setBookedStation(int station, int status){
         bookedStation[station-1] = status;
+    }
+
+    public Collection<QTask> getTaskQueueCopy(){
+        return Collections.unmodifiableCollection(taskQueue);
     }
 
 }
