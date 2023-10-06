@@ -21,10 +21,14 @@ window.onload = async function(){
     getCompletedTasks();
     getStationStatus();
     getAnalysis();
+    getNotification();
+    getIAlarm();
     setInterval(getAgvStatus, 1000);
     setInterval(getTasks, 1000);
     setInterval(getCompletedTasks, 1000);
     setInterval(getStationStatus, 1000);
+    setInterval(getNotification, 1000);
+    setInterval(getIAlarm, 1000);
     setInterval(getAnalysis, 60000);
 };
 
@@ -139,6 +143,49 @@ function getStationStatus() {
     };
 }
 
+function getNotification() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', baseUrl + "/api/homepage/notifications", true);
+    xhr.send();
+    xhr.onload = function(){
+        if(xhr.status == 200){
+            var data = JSON.parse(this.responseText);
+            updateMessage(data);
+        }
+    };
+}
+
+var alarmToggle = true;
+function getIAlarm() {
+    if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', baseUrl + "/api/homepage/iAlarm", true);
+    xhr.send();
+    xhr.onload = function(){
+        if(xhr.status == 200){
+            var data = Number(this.responseText);
+            if(data === 0){
+                document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
+            }else if(data === 1){
+                if(alarmToggle){
+                    document.getElementById("messagebg").style.backgroundColor = "#FF0000";
+                    alarmToggle=false;
+                    const audio = document.createElement("audio");
+                    // audio.src = baseUrl+"/audio/laser.mp3";
+                    audio.src = baseUrl+"/audio/alarm2.mp3";
+                    audio.play();
+                }else{
+                    document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
+                    alarmToggle=true;
+                }
+                
+            }
+        }
+    };
+}
+
 function getAnalysis(){
     var xhr = new XMLHttpRequest();
     xhr.open('GET', baseUrl + "/api/analysis/mode?agvId=1&value=recently", true);
@@ -156,20 +203,26 @@ function getAnalysis(){
 
 function updateAgvStatus(data){  // 更新資料
     for(let i=0;i<data.length;i++){
-        // 工作狀態
-        if (data[i].status >=0 && data[i].status <= 13) {
-            document.getElementById("status").value = agvStatusDict[data[i].status];
+        if(data[i].battery === 0 && data[i].signal === 0){
+            document.getElementById("agvOnlineStatus").style.display = "none";
+            document.getElementById("agvOfflineStatus").style.display = "block";
         }else{
-            console.log("內容錯誤");
+            document.getElementById("agvOfflineStatus").style.display = "none";
+            document.getElementById("agvOnlineStatus").style.display = "block";
+            // 工作狀態
+            if (data[i].status >=0 && data[i].status <= 13) {
+                document.getElementById("status").value = agvStatusDict[data[i].status];
+            }else{
+                console.log("內容錯誤");
+            }
+            if(data[i].task === "" || data[i].task === undefined)
+                document.getElementById("task").value = "目前沒有任務";  // 目前任務
+            else 
+                document.getElementById("task").value = data[i].task;  // 目前任務
+            document.getElementById("place").value = data[i].place;  // 目前位置
+            document.getElementById("battery").value = data[i].battery+"%";  // 目前電壓
+            document.getElementById("signal").value = data[i].signal+"%";  // 信號強度
         }
-        if(data[i].task === "")
-            document.getElementById("task").value = "目前沒有任務";  // 目前任務
-        else 
-            document.getElementById("task").value = data[i].task;  // 目前任務
-        document.getElementById("place").value = data[i].place;  // 目前位置
-        document.getElementById("battery").value = data[i].battery+"%";  // 目前電壓
-        document.getElementById("signal").value = data[i].signal+"%";  // 信號強度
-
         // 放車子
         // document.getElementById("agv_car").innerHTML = '<img src="'+baseUrl+'/image/icon_mp.png" width="50" ' +
         //                                                'style="position: absolute;left: ' + data.place.coordinate[0] + 'px;top: ' + data.place.coordinate[1] + 'px;z-index: 10" />';
@@ -246,6 +299,11 @@ function updateStationStatus(data){
         }
     }
     checkStartInput();
+}
+
+function updateMessage(data){
+    document.getElementById("message").innerHTML = data[0].content;
+    console.log(data[0]);
 }
 
 function bindEl(){

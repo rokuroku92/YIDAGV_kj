@@ -1,0 +1,10 @@
+.message-div{
+    padding: 5px;
+    height:15em;
+    text-align: center;
+}
+.message-content{
+    overflow-x: auto;
+    justify-content: center;
+    height: 88%;
+}

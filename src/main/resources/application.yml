@@ -4,5 +4,12 @@ jdbc:
   password: 12345678
 
 agvControl:
-  url: http://192.168.0.100:20100
-#  url: http://localhost:20101
+#  url: http://192.168.0.100:20100
+  url: http://localhost:20101
+
+agv:
+  low_battery: 70
+  low_battery_duration: 60
+
+http:
+  max_retry: 3

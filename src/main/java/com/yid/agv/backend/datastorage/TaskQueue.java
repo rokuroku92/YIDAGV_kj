@@ -39,10 +39,14 @@ public class TaskQueue {
 
 
     public boolean iDispatch(){
-        return !InstantStatus.iTask && !InstantStatus.iStandbyTask && !taskQueue.isEmpty() && nowTaskNumber.equals("");
+        return !InstantStatus.iStandbyTask && !taskQueue.isEmpty() && !InstantStatus.getAgvLowBattery()[0] && nowTaskNumber.equals("");
     }
 
-    public boolean iGoStandby(){
+    public boolean isEmpty(){
+        return taskQueue.isEmpty();
+    }
+
+    public boolean iEqualsStandbyStation(){
         int place = Integer.parseInt(agvManager.getAgvStatus(1).getPlace() == null ? "-1" : agvManager.getAgvStatus(1).getPlace());
         if (place == -1) return false;
 
@@ -54,7 +58,7 @@ public class TaskQueue {
                     || Integer.parseInt(standbyTag)-500 == place)
                 iEquals = true;
         }
-        return !InstantStatus.iTask && taskQueue.isEmpty() && !iEquals;
+        return iEquals;
     }
 
     public boolean addTaskToQueue(QTask task) {
@@ -89,19 +93,12 @@ public class TaskQueue {
     }
 
 
-    private final int[] stationTag1 = new int[]{1501, 1252, 1254, 1256, 1258, 1260};
-    private final int[] stationTag2 = new int[]{1524, 1513, 1515, 1517, 1771, 1773};
+    private final int[] stationTag1 = new int[]{1001, 1252, 1254, 1256, 1258, 1260};
+    private final int[] stationTag2 = new int[]{1024, 1513, 1515, 1517, 1771, 1773};
     public QTask peekTaskWithPlace() {
         if(taskQueue.isEmpty())return null;
         int place = Integer.parseInt(agvManager.getAgvStatus(1).getPlace()); // 只有一台車id=1
         int start = -1, end = -1;
-//        if (place >= 1001 && place <= 1050){
-//            start = 1;end = 5;
-//        } else if (place > 1050 && place <= 1100 || place == 1200) {
-//            start = 6;end = 10;
-//        } else if (place > 1100 && place <= 1250) {
-//            start = 11;end = 15;
-//        }else return null;
 
         for (int tag: stationTag1) {
             if (place == tag) {

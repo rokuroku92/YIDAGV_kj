@@ -3,6 +3,7 @@ import com.yid.agv.model.StationStatus;
 import com.yid.agv.repository.StationDao;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

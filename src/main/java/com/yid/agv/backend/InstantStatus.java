@@ -8,6 +8,7 @@ import com.yid.agv.model.QTask;
 import com.yid.agv.model.Station;
 import com.yid.agv.model.StationStatus;
 import com.yid.agv.repository.*;
+import com.yid.agv.service.HomePageService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,6 +33,10 @@ public class InstantStatus {
     private TestFakeData testFakeData;
     @Value("${agvControl.url}")
     private String agvUrl;
+    @Value("${agv.low_battery}")
+    private int LOW_BATTERY;
+    @Value("${agv.low_battery_duration}")
+    private int LOW_BATTERY_DURATION;
     @Autowired
     private AGVIdDao agvIdDao;
     @Autowired
@@ -48,7 +53,8 @@ public class InstantStatus {
     private TaskQueue taskQueue;
     @Autowired
     private StationManager stationManager;
-
+    @Autowired
+    private HomePageService homePageService;
     @Autowired
     @Qualifier("threadPoolTaskExecutorOfReDispatch")
     private ThreadPoolTaskExecutor reDispatchExecutor;  // 專門給dispatchTaskToAGV
@@ -63,14 +69,20 @@ public class InstantStatus {
     public static boolean iStandbyTask = false;
 
     private boolean[] iOffline;  // 用來阻擋，避免重複計入資料庫。
-    private String[] lastAgvStatusData;  // 用來阻擋，避免重複計入資料庫。
+
+    private static boolean[] agvLowBattery;
 
     @PostConstruct
     public void __init() {
         stationIdTagMap = stationDao.queryStations().stream()
                 .collect(Collectors.toMap(Station::getId, Station::getTag));
-        lastAgvStatusData = new String[agvIdDao.queryAGVList().size()];
-        iOffline = new boolean[agvIdDao.queryAGVList().size()];
+        int agvSize = agvIdDao.queryAGVList().size();
+        lastAgvStatusData = new String[agvSize];
+        iOffline = new boolean[agvSize];
+        agvLowBattery = new boolean[agvSize];
+        lowBatteryCount = new int[agvSize];
+        lastBattery = new boolean[agvSize];
+        time = new int[agvSize];
         Arrays.fill(lastCaller, -1);
         for (int i = 1; i <= 15; i++) {
             callerStationStatusMap.put(i, 0);
@@ -128,11 +140,18 @@ public class InstantStatus {
 
     private void updateAGVOfflineStatus(AgvStatus agvStatus, NotificationDao.Title agvTitle, int i){
         agvStatus.setStatus(AgvStatus.Status.OFFLINE);
+        agvStatus.setSignal(0);
+        agvStatus.setBattery(0);
         notificationDao.insertMessage(agvTitle, NotificationDao.Status.OFFLINE);
         CountUtilizationRate.isPoweredOn[i] = false;
         CountUtilizationRate.isWorking[i] = false;
     }
 
+
+    private String[] lastAgvStatusData;  // 用來阻擋，避免重複計入資料庫。
+    private int[] time;
+    private int[] lowBatteryCount;
+    private boolean[] lastBattery; // 用來阻擋，避免重複計入資料庫。
     private void updateAGVOnlineStatus(AgvStatus agvStatus, String[] data, NotificationDao.Title agvTitle, int i){
         CountUtilizationRate.isPoweredOn[i] = true;
 
@@ -142,14 +161,33 @@ public class InstantStatus {
         agvStatus.setSignal(Integer.parseInt(data[2].trim()));
         // data[3] 電量
         agvStatus.setBattery(Integer.parseInt(data[3].trim()));
+        if(agvStatus.getBattery()<LOW_BATTERY){
+            if(lowBatteryCount[i]>LOW_BATTERY_DURATION){
+                agvLowBattery[i] = true;
+                if(!lastBattery[i]){
+                    notificationDao.insertMessage(agvTitle, NotificationDao.Status.BATTERY_TOO_LOW);
+                    lastBattery[i]=true;
+                }
+            } else {
+                lowBatteryCount[i]++;
+            }
+        } else {
+            lowBatteryCount[i] = 0;
+            agvLowBattery[i] = false;
+            lastBattery[i]=false;
+        }
+
+
 
         // data[5] agv狀態
-        if (!Objects.equals(lastAgvStatusData[i], data[5].trim())) {
+        if (!Objects.equals(lastAgvStatusData[i], data[5].trim()) || iOffline[i]) {
+            System.out.println("Update Status");
             updateAgvStatus(agvStatus, data, agvTitle);
             lastAgvStatusData[i] = data[5].trim();
         }
 
-        if(agvStatus.getStatus() == 2) {
+        if(agvStatus.getStatus() == 4) { // TODO: 改為2
+            time[i]=0;
             // data[4] 任務狀態
             boolean[] taskStatus = parseAGVStatus(Integer.parseInt(data[4].trim()));
             if (taskStatus[7]) {
@@ -160,6 +198,15 @@ public class InstantStatus {
                 } else {
                     handleCompletedTask(agvStatus, i);
                 }
+            }
+        } else if (agvStatus.getStatus() == 8) { // 若前有障礙時
+            System.out.println("in");
+            if(time[i]<5){
+                System.out.println("time++");
+                time[i]++;
+            }else{
+                System.out.println("alarm");
+                homePageService.setIAlarm(1);
             }
         }
 
@@ -233,22 +280,26 @@ public class InstantStatus {
                         // AGV 重新啟動
                         agvStatus.setStatus(AgvStatus.Status.REBOOT);
                         notificationDao.insertMessage(agvTitle, NotificationDao.Status.REBOOT);
+                        homePageService.setIAlarm(0);
                     }
                     case 1 -> {
                         // AGV 手動模式
                         agvStatus.setStatus(AgvStatus.Status.MANUAL);
                         notificationDao.insertMessage(agvTitle, NotificationDao.Status.MANUAL);
+                        homePageService.setIAlarm(0);
                     }
                     case 2 -> {
                         // AGV 連線中(自動上位模式)
                         agvStatus.setStatus(AgvStatus.Status.ONLINE);
                         notificationDao.insertMessage(agvTitle, NotificationDao.Status.ONLINE);
+                        homePageService.setIAlarm(0);
                     }
                     default -> {
                         // 系統異常資料
                         agvStatus.setStatus(AgvStatus.Status.ERROR_AGV_DATA);
                         System.out.println("異常agv狀態資料");
                         notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
+                        homePageService.setIAlarm(0);
                     }
                 }
             }
@@ -256,16 +307,19 @@ public class InstantStatus {
                 // AGV 緊急停止
                 agvStatus.setStatus(AgvStatus.Status.STOP);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.STOP);
+                homePageService.setIAlarm(1);
             }
             case 2 -> {
                 // AGV 出軌
                 agvStatus.setStatus(AgvStatus.Status.DERAIL);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.DERAIL);
+                homePageService.setIAlarm(1);
             }
             case 3 -> {
                 // AGV 發生碰撞
                 agvStatus.setStatus(AgvStatus.Status.COLLIDE);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.COLLIDE);
+                homePageService.setIAlarm(1);
             }
             case 4 -> {
                 // AGV 前有障礙
@@ -276,31 +330,37 @@ public class InstantStatus {
                 // AGV 轉向角度過大
                 agvStatus.setStatus(AgvStatus.Status.EXCESSIVE_TURN_ANGLE);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.EXCESSIVE_TURN_ANGLE);
+                homePageService.setIAlarm(0);
             }
             case 6 -> {
                 // AGV 卡號錯誤
                 agvStatus.setStatus(AgvStatus.Status.WRONG_TAG_NUMBER);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.WRONG_TAG_NUMBER);
+                homePageService.setIAlarm(0);
             }
             case 7 -> {
                 // AGV 未知卡號
                 agvStatus.setStatus(AgvStatus.Status.UNKNOWN_TAG_NUMBER);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.UNKNOWN_TAG_NUMBER);
+                homePageService.setIAlarm(0);
             }
             case 8 -> {
                 // AGV 異常排除
                 agvStatus.setStatus(AgvStatus.Status.EXCEPTION_EXCLUSION);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.EXCEPTION_EXCLUSION);
+                homePageService.setIAlarm(0);
             }
             case 9 -> {
                 // AGV 感知器偵測異常
                 agvStatus.setStatus(AgvStatus.Status.SENSOR_ERROR);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.SENSOR_ERROR);
+                homePageService.setIAlarm(0);
             }
             case 10 -> {
                 // AGV 充電異常
                 agvStatus.setStatus(AgvStatus.Status.CHARGE_ERROR);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.CHARGE_ERROR);
+                homePageService.setIAlarm(0);
             }
             default -> {
                 // 系統異常資料
@@ -320,10 +380,10 @@ public class InstantStatus {
         // 抓取Station狀態與Booking，並更新到stationStatuses
         StationStatus[] notBookedStationStatuses = new StationStatus[15];
 
-//        String[] stationValue= testFakeData.crawlStationStatus().orElse(new String[0]);  // TODO: Fake data
+//        String[] callerValue= testFakeData.crawlStationStatus().orElse(new String[0]);  // TODO: Fake data
         String[] callerValue = crawlCallerStatus().orElse(new String[0]);
 
-        if(callerValue.length != 15) return;
+        if(callerValue.length != 15 && callerValue.length != 14) return;
 
         boolean[] callerStatus = new boolean[15];
 
@@ -502,7 +562,7 @@ public class InstantStatus {
             iCon=true;
             return Optional.of(data);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             System.out.println("AGV 控制系統未連線");
             CountUtilizationRate.isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
             CountUtilizationRate.isWorking = new boolean[agvIdDao.queryAGVList().size()];
@@ -533,7 +593,14 @@ public class InstantStatus {
 
             return Optional.of(data);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.out.println("AGV 控制系統未連線");
+            CountUtilizationRate.isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
+            CountUtilizationRate.isWorking = new boolean[agvIdDao.queryAGVList().size()];
+            if(iCon){
+                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.OFFLINE);
+                iCon=false;
+            }
         }
 
         return Optional.empty();
@@ -572,7 +639,7 @@ public class InstantStatus {
                 if (callerStationStatus[i]) {
                     doSendCaller(i - 4, 2);
                 } else {
-                    doSendCaller(i - 4, 0);
+                    doSendCaller(i - 4, 1);
                 }
             }
         }
@@ -599,7 +666,7 @@ public class InstantStatus {
                 if (callerStationStatus[i+2]) {
                     doSendCaller(i, 2);
                 } else {
-                    doSendCaller(i, 0);
+                    doSendCaller(i, 1);
                 }
             }
         }
@@ -674,6 +741,10 @@ public class InstantStatus {
 
     public static Map<Integer, Integer> getCallerStationStatusMap(){
         return new HashMap<>(callerStationStatusMap);
+    }
+
+    public static boolean[] getAgvLowBattery(){
+        return agvLowBattery;
     }
 
 

@@ -1,31 +1,49 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<link rel="icon" type="image/ico" href="/YIDAGV/image/favicon.ico">
 		<title>元創智動AGV|系統訊息</title>
+		<script>
+            var baseUrl;
+            if (window.location.href.startsWith('http://127.0.0.1:5500')) {
+                // Live Server 环境
+                console.log('Running on Live Server');
+                baseUrl = "http://localhost:8080/YIDAGV";
+                var baseHref = document.createElement("base");
+                baseHref.href = "http://127.0.0.1:5500/static/";
+                document.head.appendChild(baseHref);
+            } else {
+                // Spring Boot 环境 window.location.href.startsWith('http://localhost:8080/YIDAGV')
+                console.log('Running on Spring Boot');
+                baseUrl = window.location.origin + "/YIDAGV";
+                var baseHref = document.createElement("base");
+                baseHref.href = "/YIDAGV/";
+                document.head.appendChild(baseHref);
+            }
+        </script>
+		<link rel="icon" type="image/ico" href="/YIDAGV/image/favicon.ico">
 		<!-- Bootstrap core CSS -->
-		<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-		<link th:href="@{/css/yid-basic.css}" rel="stylesheet">
-		<link th:href="@{/css/analysis.css}" rel="stylesheet">
-		<link th:href="@{/css/message.css}" rel="stylesheet">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/yid-basic.css" rel="stylesheet">
+		<link href="css/analysis.css" rel="stylesheet">
+		<link href="css/message.css" rel="stylesheet">
 
-		<script th:src="@{/js/jquery-3.3.1.min.js}"></script>
-		<script th:src="@{/js/bootstrap.min.js}"></script>
-		<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-		<script th:src="@{/js/popper.min.js}"></script>
-		<script th:src="@{/js/bootstrap-table.min.js}"></script>
-		<script th:src="@{/js/message.js}"></script>
+		<script src="js/jquery-3.3.1.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/bootstrap.bundle.min.js"></script>
+		<script src="js/popper.min.js"></script>
+		<script src="js/bootstrap-table.min.js"></script>
+		<script src="js/message.js"></script>
 	</head>
 	<body style="padding: 0px;line-height: 10px;">
 		<div class="row Title">
 			<div class="col-4"></div>
 			<div class="col-4">
-                <img th:src="@{/image/yidlogo.svg}" alt="SVG Image" style="width: 10%;">
-                <img th:src="@{/image/yidlogotext.svg}" alt="SVG Image" style="width: 85%;">
+                <img src="image/yidlogo.svg" alt="SVG Image" style="width: 10%;">
+                <img src="image/yidlogotext.svg" alt="SVG Image" style="width: 85%;">
             </div>
             <div class="col-4" style="position: relative;">
-                <img style="position: absolute;bottom: 0;right: 0;max-height: 45%;" th:src="@{/image/yidwww.svg}" alt="image error">
+                <img style="position: absolute;bottom: 0;right: 0;max-height: 45%;" src="image/yidwww.svg" alt="image error">
             </div>
 		</div>
 		<hr style="border: none;height: 10px;background-color: #93B955;margin: 0px;margin-top: 3px;opacity: 1;">
@@ -36,7 +54,7 @@
 						<path d="M16 2a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9.586a1 1 0 0 1 .707.293l2.853 2.853a.5.5 0 0 0 .854-.353V2zM3.5 3h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1 0-1zm0 2.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1z"/>
 					</svg>
 					<label>系統訊息</label>
-					<a th:href="@{/agv/}" style=" float: right">
+					<a href="agv/" style=" float: right">
 						<input type="button" class="btn btn-yid" value="返回主畫面">
 					</a>
 				</div>

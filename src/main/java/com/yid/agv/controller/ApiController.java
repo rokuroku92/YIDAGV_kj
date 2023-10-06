@@ -1,7 +1,6 @@
 package com.yid.agv.controller;
 
 import com.google.gson.Gson;
-import com.yid.agv.backend.InstantStatus;
 import com.yid.agv.model.*;
 import com.yid.agv.service.AnalysisService;
 
@@ -12,13 +11,11 @@ import com.yid.agv.service.HomePageService;
 import com.yid.agv.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class ApiController {
     private final Gson gson = new Gson();
 
@@ -79,6 +76,10 @@ public class ApiController {
         return gson.toJson(list);
     }
 
+    @GetMapping(value = "/homepage/iAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getIAlarm(){
+        return Integer.toString(homePageService.getIAlarm());
+    }
     @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getNotifications(){
         List<Notification> list = homePageService.queryNotifications();

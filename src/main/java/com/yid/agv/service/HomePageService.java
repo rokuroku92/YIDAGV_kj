@@ -32,7 +32,17 @@ public class HomePageService {
 
     @Autowired
     private StationManager stationManager;
-    
+
+    private int iAlarm;
+
+    public int getIAlarm() {
+        return iAlarm;
+    }
+
+    public void setIAlarm(int iAlarm) {
+        this.iAlarm = iAlarm;
+    }
+
     public AgvStatus[] getAgvStatus(){
         return agvManager.getAgvStatusCopyArray();
     }

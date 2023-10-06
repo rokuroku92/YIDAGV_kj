@@ -1,44 +1,58 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<link rel="icon" type="image/ico" href="/YIDAGV/image/favicon.ico">
-<!--		<meta name="viewport" content="width=device-width, initial-scale=1">-->
-<!--		<meta name="description" content="">-->
-<!--		<meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">-->
-<!--		<meta name="generator" content="Hugo 0.88.1">-->
 		<title>元創智動AGV效益分析</title>
+		<script>
+            var baseUrl;
+            if (window.location.href.startsWith('http://127.0.0.1:5500')) {
+                // Live Server 环境
+                console.log('Running on Live Server');
+                baseUrl = "http://localhost:8080/YIDAGV";
+                var baseHref = document.createElement("base");
+                baseHref.href = "http://127.0.0.1:5500/static/";
+                document.head.appendChild(baseHref);
+            } else {
+                // Spring Boot 环境 window.location.href.startsWith('http://localhost:8080/YIDAGV')
+                console.log('Running on Spring Boot');
+                baseUrl = window.location.origin + "/YIDAGV";
+                var baseHref = document.createElement("base");
+                baseHref.href = "/YIDAGV/";
+                document.head.appendChild(baseHref);
+            }
+        </script>
+		<link rel="icon" type="image/ico" href="YIDAGV/image/favicon.ico">
 		<!-- Bootstrap core CSS -->
-		<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-		<link th:href="@{/css/yid-basic.css}" rel="stylesheet">
-		<link th:href="@{/css/analysis.css}" rel="stylesheet">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/yid-basic.css" rel="stylesheet">
+		<link href="css/analysis.css" rel="stylesheet">
 
-		<script th:src="@{/js/jquery-3.3.1.min.js}"></script>
-		<script th:src="@{/js/bootstrap.min.js}"></script>
-		<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-		<script th:src="@{/js/popper.min.js}"></script>
-		<script th:src="@{/js/chart.js@4.3.0}"></script>
-		<script th:src="@{/js/bootstrap-table.min.js}"></script>
-		<script th:src="@{/js/yidagvanalysis.js}"></script>
+		<script src="js/jquery-3.3.1.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/bootstrap.bundle.min.js"></script>
+		<script src="js/popper.min.js"></script>
+		<script src="js/chart.js@4.3.0"></script>
+		<script src="js/bootstrap-table.min.js"></script>
+		<script src="js/yidagvanalysis.js"></script>
 
 	</head>
 	<body style="padding: 0px;line-height: 10px;">
-<!--		<img th:src="@{/image/2023AGVS_UI_1280_800_top_20230223.png}" alt="image error" style="max-width:100%;">-->
+<!--		<img src="image/2023AGVS_UI_1280_800_top_20230223.png}" alt="image error" style="max-width:100%;">-->
 		<div class="row Title">
 			<div class="col-4"></div>
 			<div class="col-4">
-                <img th:src="@{/image/yidlogo.svg}" alt="SVG Image" style="width: 10%;">
-                <img th:src="@{/image/yidlogotext.svg}" alt="SVG Image" style="width: 85%;">
+                <img src="image/yidlogo.svg" alt="SVG Image" style="width: 10%;">
+                <img src="image/yidlogotext.svg" alt="SVG Image" style="width: 85%;">
             </div>
             <div class="col-4" style="position: relative;">
-                <img style="position: absolute;bottom: 0;right: 0;max-height: 45%;" th:src="@{/image/yidwww.svg}" alt="image error">
+                <img style="position: absolute;bottom: 0;right: 0;max-height: 45%;" src="image/yidwww.svg" alt="image error">
             </div>
 		</div>
 		<hr style="border: none;height: 10px;background-color: #93B955;margin: 0px;margin-top: 3px;opacity: 1;">
 		<div class="container-fluid" style="padding: 20px;padding-left: 40px;padding-right: 40px;padding-bottom: 0px;">
 			<div class="row">
 				<div class="col">
-					<img th:src="@{/image/icon_3.png}" alt="image error">
+					<img src="image/icon_3.png" alt="image error">
 					<font size="4">效益分析</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<div class="btn-group" role="group" aria-label="Basic example">
 						<button type="button" class="btn btn-outline-primary" onclick="reSet('recently')">最近兩週</button>
@@ -67,7 +81,7 @@
 								</div>
 								<div class="modal-body">
 									<div id="printt">
-										<img th:src="@{/image/logo.png}" alt="image error" border="0" id="logog">
+										<img src="image/logo.png" alt="image error" border="0" id="logog">
 										<table id="va" class="table">
 											<thead>
 											<tr>
@@ -99,10 +113,10 @@
 							</div>
 						</div>
 					</div>
-					<a th:href="@{/agv/}" style=" float: right;">
+					<a href="agv/" style=" float: right;">
 						<input type="button" class="btn btn-yid" value="返回主畫面">
 					</a>
-					<a th:href="@{/agv/equipment}" style=" float: right; margin-right: 0.5em;">
+					<a href="agv/equipment" style=" float: right; margin-right: 0.5em;">
 						<input type="button" class="btn btn-yid" value="返回設備保全部">
 					</a>
 				</div>

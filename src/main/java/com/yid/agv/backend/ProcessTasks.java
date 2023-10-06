@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 public class ProcessTasks {
     @Value("${agvControl.url}")
     private String agvUrlValue;
+    @Value("${http.max_retry}")
+    private int maxRetry;
     private static String agvUrl;
     @Autowired
     private TaskDao taskDao;
@@ -43,6 +45,8 @@ public class ProcessTasks {
     @Autowired
     private AGVManager agvManager;
 
+    private static int MAX_RETRY;
+
     private static Map<Integer, Integer> stationIdTagMap;
     private static QTask toStandbyTask;
 
@@ -50,6 +54,7 @@ public class ProcessTasks {
     @PostConstruct
     public void _init() {
         agvUrl = agvUrlValue;
+        MAX_RETRY = maxRetry;
         stationIdTagMap = stationDao.queryStations().stream().
                 collect(Collectors.toMap(Station::getId, Station::getTag));
     }
@@ -58,13 +63,17 @@ public class ProcessTasks {
 
     @Scheduled(fixedRate = 5000)
     public void dispatchTasks() {
-        if(isRetrying)return;
+        if(isRetrying || InstantStatus.iTask)return;
         if(agvManager.getAgvStatus(1).getStatus() != 4) return;  // AGV未連線則無法派遣 TODO: 改成2
 
-        if (taskQueue.iDispatch()) {
+        if (InstantStatus.getAgvLowBattery()[0] && !taskQueue.iEqualsStandbyStation()){
+            InstantStatus.iStandbyTask = true;
+            goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1), true);
+        } else if (taskQueue.iDispatch()) {
 //            InstantStatus.iStandby = false;
             QTask goTask = taskQueue.peekTaskWithPlace();
             System.out.println("Process dispatch...");
+            System.out.println(agvManager.getAgvStatus(1).getPlace());
             String result = dispatchTaskToAGV(notificationDao, goTask, agvManager.getAgvStatus(1).getPlace());
             if(Objects.requireNonNull(result).equals("OK")){
                 taskQueue.updateTaskStatus(taskQueue.getNowTaskNumber(), 1);
@@ -75,20 +84,19 @@ public class ProcessTasks {
                 notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK_THREE_TIMES);
                 taskQueue.failedTask();
             }
-        }else if(taskQueue.iGoStandby()){
+        }else if(taskQueue.isEmpty() && !taskQueue.iEqualsStandbyStation()){
             InstantStatus.iStandbyTask = true;
-            goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1));
+            goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1), false);
         }
     }
 
 
     public static synchronized String dispatchTaskToAGV(NotificationDao notificationDao, QTask task, String nowPlace) {
-        final int MAX_RETRY = 3; // 最大重試次數
         int retryCount = 0;
         while (retryCount < MAX_RETRY) {
             try {
                 if (task != null) {
-                    if(nowPlace.equals("1001")) nowPlace = "1501";
+//                    if(nowPlace.equals("1001")) nowPlace = "1501";
                     // Dispatch the task to the AGV control system
                     String url;
                     if (task.getStartStationId() == 16 || task.getStartStationId() == 17){
@@ -177,16 +185,10 @@ public class ProcessTasks {
 
     private static final int[] stationTag1 = new int[]{1501, 1252, 1254, 1256, 1258, 1260};
     private static final int[] stationTag2 = new int[]{1524, 1513, 1515, 1517, 1771, 1773};
-    public static void goStandbyTaskByAgvId(NotificationDao notificationDao, TaskDao taskDao, int agvId, AgvStatus agvStatus){
+    public static void goStandbyTaskByAgvId(NotificationDao notificationDao, TaskDao taskDao, int agvId, AgvStatus agvStatus, boolean lowBattery){
         int place = Integer.parseInt(agvStatus.getPlace());
         int standbyStation = -1;
-//        if (place >= 1001 && place <= 1050){
-//            standbyStation = 16;
-//        } else if (place > 1050 && place <= 1100) {
-//            standbyStation = 17;
-//        } else {
-//            standbyStation = 16;
-//        }
+
         for (int tag: stationTag1) {
             if (place == tag) {
                 standbyStation = 16;
@@ -201,7 +203,7 @@ public class ProcessTasks {
                 }
             }
         }
-        if(standbyStation == -1){
+        if(standbyStation == -1 || lowBattery){
             standbyStation = 16;
         }
 
@@ -211,13 +213,23 @@ public class ProcessTasks {
         String formattedDateTime = now.format(formatter);
 
         toStandbyTask = new QTask();
-        toStandbyTask.setAgvId(agvId);
-        toStandbyTask.setModeId(0);
-        toStandbyTask.setStatus(0);
-        toStandbyTask.setTaskNumber("#SB"+formattedDateTime);
-        toStandbyTask.setStartStationId(standbyStation);
-        toStandbyTask.setTerminalStationId(standbyStation);
-        toStandbyTask.setNotificationStationId(16);
+        if(!lowBattery) {
+            toStandbyTask.setAgvId(agvId);
+            toStandbyTask.setModeId(0);
+            toStandbyTask.setStatus(0);
+            toStandbyTask.setTaskNumber("#SB" + formattedDateTime);
+            toStandbyTask.setStartStationId(standbyStation);
+            toStandbyTask.setTerminalStationId(standbyStation);
+            toStandbyTask.setNotificationStationId(16);
+        } else {
+            toStandbyTask.setAgvId(agvId);
+            toStandbyTask.setModeId(0);
+            toStandbyTask.setStatus(0);
+            toStandbyTask.setTaskNumber("#LB" + formattedDateTime);
+            toStandbyTask.setStartStationId(standbyStation);
+            toStandbyTask.setTerminalStationId(standbyStation);
+            toStandbyTask.setNotificationStationId(16);
+        }
         System.out.println("toStandbyTask.getTaskNumber(): "+toStandbyTask.getTaskNumber());
         System.out.println("formattedDateTime: "+formattedDateTime);
         System.out.println("toStandbyTask.getAgvId(): "+toStandbyTask.getAgvId());
