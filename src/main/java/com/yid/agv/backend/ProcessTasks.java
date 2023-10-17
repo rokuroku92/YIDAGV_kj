@@ -64,7 +64,7 @@ public class ProcessTasks {
     @Scheduled(fixedRate = 5000)
     public void dispatchTasks() {
         if(isRetrying || InstantStatus.iTask)return;
-        if(agvManager.getAgvStatus(1).getStatus() != 4) return;  // AGV未連線則無法派遣 TODO: 改成2
+        if(agvManager.getAgvStatus(1).getStatus() != 2) return;  // AGV未連線則無法派遣 TODO: 改成2，原4
 
         if (InstantStatus.getAgvLowBattery()[0] && !taskQueue.iEqualsStandbyStation()){
             InstantStatus.iStandbyTask = true;
@@ -74,7 +74,7 @@ public class ProcessTasks {
             QTask goTask = taskQueue.peekTaskWithPlace();
             System.out.println("Process dispatch...");
             System.out.println(agvManager.getAgvStatus(1).getPlace());
-            String result = dispatchTaskToAGV(notificationDao, goTask, agvManager.getAgvStatus(1).getPlace());
+            String result = dispatchTaskToAGV(notificationDao, goTask, agvManager.getAgvStatus(1).getPlace(), 1);
             if(Objects.requireNonNull(result).equals("OK")){
                 taskQueue.updateTaskStatus(taskQueue.getNowTaskNumber(), 1);
                 InstantStatus.startStation = goTask.getStartStationId();
@@ -91,7 +91,7 @@ public class ProcessTasks {
     }
 
 
-    public static synchronized String dispatchTaskToAGV(NotificationDao notificationDao, QTask task, String nowPlace) {
+    public static synchronized String dispatchTaskToAGV(NotificationDao notificationDao, QTask task, String nowPlace, int mode) {
         int retryCount = 0;
         while (retryCount < MAX_RETRY) {
             try {
@@ -99,13 +99,14 @@ public class ProcessTasks {
 //                    if(nowPlace.equals("1001")) nowPlace = "1501";
                     // Dispatch the task to the AGV control system
                     String url;
-                    if (task.getStartStationId() == 16 || task.getStartStationId() == 17){
+                    if (task.getStartStationId() == 16 || task.getStartStationId() == 17 || mode == 2){
                         url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                                 "&" + stationIdTagMap.get(task.getTerminalStationId());
                     } else {
                         url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                                 "&" + stationIdTagMap.get(task.getStartStationId()) + "&" + stationIdTagMap.get(task.getTerminalStationId());
                     }
+
                     System.out.println("URL: " + url);
 
                     // TODO: 看有沒有需要分成不一樣站點數的網址
@@ -241,7 +242,7 @@ public class ProcessTasks {
         taskDao.insertTask(toStandbyTask.getTaskNumber(), formattedDateTime, Integer.toString(toStandbyTask.getAgvId()),
                 Integer.toString(toStandbyTask.getStartStationId()), Integer.toString(toStandbyTask.getTerminalStationId()),
                 Integer.toString(toStandbyTask.getNotificationStationId()), Integer.toString(toStandbyTask.getModeId()));
-        dispatchTaskToAGV(notificationDao, toStandbyTask, agvStatus.getPlace());
+        dispatchTaskToAGV(notificationDao, toStandbyTask, agvStatus.getPlace(), 1);
     }
 
     public static void failedGoStandbyTask(TaskDao taskDao){

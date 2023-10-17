@@ -26,14 +26,11 @@ window.onload = async function(){
 function setAgvStatusDict() {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
-        console.log("In");
         xhr.open('GET', baseUrl + "/api/homepage/agvStatusData", true);
-        console.log("In1");
         xhr.send();
         xhr.onload = function(){
             if(xhr.status == 200){
                 let agvStatusDataList = JSON.parse(this.responseText);
-                console.log("data list: ", agvStatusDataList);
                 for(let i=0;i<agvStatusDataList.length;i++){
                     agvStatusDict[agvStatusDataList[i].id] = agvStatusDataList[i].content;
                 }
@@ -105,7 +102,6 @@ function getNotification() {
     };
 }
 
-var alarmToggle = true;
 function getIAlarm() {
     if (Notification.permission !== 'granted') {
         Notification.requestPermission();
@@ -117,26 +113,52 @@ function getIAlarm() {
         if(xhr.status == 200){
             var data = Number(this.responseText);
             if(data === 0){
-                document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
-                document.getElementById("notification").style.backgroundColor = "#FFFFFF";
+                getEquipmentAlarm();
             }else if(data === 1){
-                if(alarmToggle){
-                    document.getElementById("messagebg").style.backgroundColor = "#FF0000";
-                    document.getElementById("notification").style.backgroundColor = "#FF0000";
-                    alarmToggle=false;
-                    const audio = document.createElement("audio");
-                    // audio.src = baseUrl+"/audio/laser.mp3";
-                    audio.src = baseUrl+"/audio/alarm1.mp3";
-                    audio.play();
-                }else{
-                    document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
-                    document.getElementById("notification").style.backgroundColor = "#FFFFFF";
-                    alarmToggle=true;
-                }
-                
+                equipmentAlarmProgress();
             }
         }
     };
+}
+
+function getEquipmentAlarm() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', baseUrl + "/api/homepage/equipmentIAlarm", true);
+    xhr.send();
+    xhr.onload = function(){
+        if(xhr.status == 200){
+            var data = JSON.parse(this.responseText);
+            var c=0;
+            for(let i=0;i<data.length;i++){
+                if(data[i] != 0){
+                    c++;
+                }
+            }
+            if(c>0) {
+                equipmentAlarmProgress();
+            } else {
+                document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
+                document.getElementById("notification").style.backgroundColor = "#FFFFFF";
+            }
+        }
+    }
+}
+
+var alarmToggle = true;
+function equipmentAlarmProgress(){
+    if(alarmToggle){
+        document.getElementById("messagebg").style.backgroundColor = "#FF0000";
+        document.getElementById("notification").style.backgroundColor = "#FF0000";
+        alarmToggle=false;
+        const audio = document.createElement("audio");
+        // audio.src = baseUrl+"/audio/laser.mp3";
+        audio.src = baseUrl+"/audio/alarm1.mp3";
+        audio.play();
+    }else{
+        document.getElementById("messagebg").style.backgroundColor = "#FFFFFF";
+        document.getElementById("notification").style.backgroundColor = "#FFFFFF";
+        alarmToggle=true;
+    }
 }
 
 function getAnalysis(){

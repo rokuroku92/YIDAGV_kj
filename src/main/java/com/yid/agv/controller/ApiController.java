@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.yid.agv.model.*;
 import com.yid.agv.service.AnalysisService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +81,12 @@ public class ApiController {
     public String getIAlarm(){
         return Integer.toString(homePageService.getIAlarm());
     }
+
+    @GetMapping(value = "/homepage/equipmentIAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getEquipmentIAlarm(){
+        return Arrays.toString(homePageService.getEquipmentIAlarm());
+    }
+
     @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getNotifications(){
         List<Notification> list = homePageService.queryNotifications();

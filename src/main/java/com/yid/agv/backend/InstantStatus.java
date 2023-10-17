@@ -37,6 +37,8 @@ public class InstantStatus {
     private int LOW_BATTERY;
     @Value("${agv.low_battery_duration}")
     private int LOW_BATTERY_DURATION;
+    @Value("${caller.offline_duration}")
+    private int CALLER_OFFLINE_DURATION;
     @Autowired
     private AGVIdDao agvIdDao;
     @Autowired
@@ -82,7 +84,10 @@ public class InstantStatus {
         agvLowBattery = new boolean[agvSize];
         lowBatteryCount = new int[agvSize];
         lastBattery = new boolean[agvSize];
+        tagError = new boolean[agvSize];
+        lastTaskBuffer = new boolean[agvSize];
         time = new int[agvSize];
+        Arrays.fill(callerOfflineSec, 0);
         Arrays.fill(lastCaller, -1);
         for (int i = 1; i <= 15; i++) {
             callerStationStatusMap.put(i, 0);
@@ -152,13 +157,14 @@ public class InstantStatus {
     private int[] time;
     private int[] lowBatteryCount;
     private boolean[] lastBattery; // 用來阻擋，避免重複計入資料庫。
+    private boolean[] tagError;
     private void updateAGVOnlineStatus(AgvStatus agvStatus, String[] data, NotificationDao.Title agvTitle, int i){
         CountUtilizationRate.isPoweredOn[i] = true;
 
         // data[1] 位置
         agvStatus.setPlace(data[1].trim());
         // data[2] 訊號
-        agvStatus.setSignal(Integer.parseInt(data[2].trim()));
+        agvStatus.setSignal((int)Math.ceil(Integer.parseInt(data[2].trim()) / 120.0 * 100));
         // data[3] 電量
         agvStatus.setBattery(Integer.parseInt(data[3].trim()));
         if(agvStatus.getBattery()<LOW_BATTERY){
@@ -177,16 +183,15 @@ public class InstantStatus {
             lastBattery[i]=false;
         }
 
-
-
         // data[5] agv狀態
         if (!Objects.equals(lastAgvStatusData[i], data[5].trim()) || iOffline[i]) {
-            System.out.println("Update Status");
-            updateAgvStatus(agvStatus, data, agvTitle);
+            updateAgvStatus(agvStatus, data, agvTitle, i);
             lastAgvStatusData[i] = data[5].trim();
         }
 
-        if(agvStatus.getStatus() == 4) { // TODO: 改為2
+        if(tagError[i]) {  // TODO: 卡號錯誤
+            handleTagError(parseAGVStatus(Integer.parseInt(data[4].trim())), agvStatus, i);
+        } else if(agvStatus.getStatus() == 2) { // TODO: 改為2，原4
             time[i]=0;
             // data[4] 任務狀態
             boolean[] taskStatus = parseAGVStatus(Integer.parseInt(data[4].trim()));
@@ -213,6 +218,28 @@ public class InstantStatus {
 
     }
 
+    private boolean[] lastTaskBuffer;
+    private void handleTagError(boolean[] taskStatus, AgvStatus agvStatus, int i){
+        if (taskStatus[0] && !lastTaskBuffer[i]) {
+            if(!fixAgvTagErrorCompleted){
+                fixAgvTagError();
+            }
+        } else if (taskStatus[0] && lastTaskBuffer[i]) {
+            tagError[i] = false;
+            fixAgvTagErrorCompleted = false;
+            tagErrorDispatchCompleted = false;
+            lastTaskBuffer[i] = false;
+        } else if (!taskStatus[0]) {
+            if(!iStandbyTask && !tagErrorDispatchCompleted){
+                switch (taskProgress){
+                    case PRE_START_STATION -> tagErrorDispatch(agvStatus.getPlace(), 1);
+                    case PRE_TERMINAL_STATION -> tagErrorDispatch(agvStatus.getPlace(), 2);
+                }
+            }
+            lastTaskBuffer[i] = true;
+        }
+    }
+
     private void handleFailedTask(AgvStatus agvStatus){
         agvStatus.setTask("任務執行失敗");
         if (!iStandbyTask){
@@ -236,10 +263,18 @@ public class InstantStatus {
         }
     }
 
+    private boolean tagErrorDispatchCompleted;
+    private void tagErrorDispatch(String place, int mode){
+        String result = ProcessTasks.dispatchTaskToAGV(notificationDao, taskQueue.getTaskByTaskNumber(taskQueue.getNowTaskNumber()), place, mode);
+        if(result.equals("OK")) {
+            tagErrorDispatchCompleted = true;
+        }
+    }
+
     @Async
     private void doReDispatch(String place){
         reDispatchExecutor.execute(() ->
-                ProcessTasks.dispatchTaskToAGV(notificationDao, taskQueue.getTaskByTaskNumber(taskQueue.getNowTaskNumber()), place)
+                ProcessTasks.dispatchTaskToAGV(notificationDao, taskQueue.getTaskByTaskNumber(taskQueue.getNowTaskNumber()), place, 1)
         );
     }
 
@@ -272,7 +307,7 @@ public class InstantStatus {
         }
     }
 
-    private void updateAgvStatus(AgvStatus agvStatus, String[] data, NotificationDao.Title agvTitle){
+    private void updateAgvStatus(AgvStatus agvStatus, String[] data, NotificationDao.Title agvTitle, int i){
         switch (Integer.parseInt(data[5].trim()) / 10) {
             case 0 -> {
                 switch (Integer.parseInt(data[5].trim()) % 10) {
@@ -336,6 +371,7 @@ public class InstantStatus {
                 // AGV 卡號錯誤
                 agvStatus.setStatus(AgvStatus.Status.WRONG_TAG_NUMBER);
                 notificationDao.insertMessage(agvTitle, NotificationDao.Status.WRONG_TAG_NUMBER);
+                tagError[i] = true;
                 homePageService.setIAlarm(0);
             }
             case 7 -> {
@@ -375,6 +411,7 @@ public class InstantStatus {
     private static final HashMap<Integer, Integer> callerStationStatusMap = new HashMap<>();
     private final boolean[] callerStationStatus = new boolean[15];
     private final boolean[] iCallerConn = new boolean[14];
+    private final int[] callerOfflineSec = new int[14];
     @Scheduled(fixedRate = 1000) // 每秒執行
     public void updateStationStatuses() {
         // 抓取Station狀態與Booking，並更新到stationStatuses
@@ -396,6 +433,7 @@ public class InstantStatus {
             if(!Objects.equals(callerValue[i].split(",")[1], "-1")){
                 if(!iCallerConn[i]){
                     iCallerConn[i] = true;
+                    homePageService.setEquipmentIAlarm(i, 0);
 //                    switch (i){
 //                        case 0 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_1, NotificationDao.Status.ONLINE);
 //                        case 1 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_2, NotificationDao.Status.ONLINE);
@@ -413,15 +451,16 @@ public class InstantStatus {
 //                        case 13 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_14, NotificationDao.Status.ONLINE);
 //                    }
                 }
+                callerOfflineSec[i] = 0;
             } else {
                 if(iCallerConn[i]){
                     iCallerConn[i] = false;
 //                    switch (i){
 //                        case 0 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_1, NotificationDao.Status.OFFLINE);
-//                        case 2 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_3, NotificationDao.Status.OFFLINE);
-//                        case 4 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_5, NotificationDao.Status.OFFLINE);
-//                        case 3 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_4, NotificationDao.Status.OFFLINE);
 //                        case 1 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_2, NotificationDao.Status.OFFLINE);
+//                        case 2 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_3, NotificationDao.Status.OFFLINE);
+//                        case 3 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_4, NotificationDao.Status.OFFLINE);
+//                        case 4 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_5, NotificationDao.Status.OFFLINE);
 //                        case 5 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_6, NotificationDao.Status.OFFLINE);
 //                        case 6 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_7, NotificationDao.Status.OFFLINE);
 //                        case 7 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_8, NotificationDao.Status.OFFLINE);
@@ -431,6 +470,26 @@ public class InstantStatus {
 //                        case 11 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_12, NotificationDao.Status.OFFLINE);
 //                        case 12 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_13, NotificationDao.Status.OFFLINE);
 //                        case 13 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_14, NotificationDao.Status.OFFLINE);
+//                    }
+                }
+                callerOfflineSec[i]++;
+                if(callerOfflineSec[i] == CALLER_OFFLINE_DURATION){
+                    homePageService.setEquipmentIAlarm(i, 1);
+//                     switch (i){
+//                        case 0 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_1, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 1 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_2, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 2 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_3, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 3 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_4, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 4 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_5, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 5 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_6, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 6 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_7, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 7 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_8, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 8 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_9, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 9 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_10, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 10 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_11, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 11 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_12, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 12 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_13, NotificationDao.Status.CALLER_LONG_OFFLINE);
+//                        case 13 -> notificationDao.insertMessage(NotificationDao.Title.CALLER_14, NotificationDao.Status.CALLER_LONG_OFFLINE);
 //                    }
                 }
                 lastCaller[i] = -1;
@@ -604,6 +663,22 @@ public class InstantStatus {
         }
 
         return Optional.empty();
+    }
+
+    private boolean fixAgvTagErrorCompleted;
+    private void fixAgvTagError() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(agvUrl + "/cmd=1&QJ0130X"))
+                .GET()
+                .build();
+        try {
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            String webpageContent = response.body();
+            if(webpageContent.trim().equals("OK")) {
+                fixAgvTagErrorCompleted = true;
+            }
+        } catch (IOException | InterruptedException ignored) {
+        }
     }
 
     private final HttpClient httpClientForSendCallerStatus = HttpClient.newHttpClient();

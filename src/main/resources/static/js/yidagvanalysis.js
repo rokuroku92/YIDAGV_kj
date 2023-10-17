@@ -1,4 +1,3 @@
-var baseUrl = window.location.origin + "/YIDAGV";
 var myChart;
 window.onload = function(){
     init();

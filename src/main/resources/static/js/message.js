@@ -1,5 +1,3 @@
-var baseUrl = window.location.origin + "/YIDAGV";
-
 window.onload = function(){
     getMessage();
 };

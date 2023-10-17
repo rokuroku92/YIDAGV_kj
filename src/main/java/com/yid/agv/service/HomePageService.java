@@ -4,9 +4,11 @@ import com.yid.agv.backend.datastorage.AGVManager;
 import com.yid.agv.backend.datastorage.StationManager;
 import com.yid.agv.model.*;
 import com.yid.agv.repository.*;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -33,7 +35,21 @@ public class HomePageService {
     @Autowired
     private StationManager stationManager;
 
+    @PostConstruct
+    public void __init() {
+        Arrays.fill(equipmentIAlarm, 0);
+    }
+
     private int iAlarm;
+    private final int[] equipmentIAlarm = new int[14];
+
+    public int[] getEquipmentIAlarm() {
+        return equipmentIAlarm;
+    }
+
+    public void setEquipmentIAlarm(int i, int value) {
+        this.equipmentIAlarm[i] = value;
+    }
 
     public int getIAlarm() {
         return iAlarm;

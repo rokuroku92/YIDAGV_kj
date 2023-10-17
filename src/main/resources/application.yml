@@ -5,11 +5,15 @@ jdbc:
 
 agvControl:
 #  url: http://192.168.0.100:20100
-  url: http://localhost:20101
+  url: http://10.11.33.232:20100
+#  url: http://localhost:20101
 
 agv:
-  low_battery: 70
-  low_battery_duration: 60
+  low_battery: 70  # AGV電量低於多少時，派遣回待命點
+  low_battery_duration: 60  # AGV電量低於多少時，派遣回待命點
+
+caller:
+  offline_duration: 20
 
 http:
   max_retry: 3

@@ -19,11 +19,6 @@ public class AgvController {
     public String pageEquipment() {
         return "equipment";
     }
-    @GetMapping(value = "/equipment1")
-    public ResponseEntity<Resource> getStaticPage() {
-        Resource resource = new ClassPathResource("static/equipment copy.html");
-        return ResponseEntity.ok().body(resource);
-    }
     @GetMapping(value = "/analysis")
     public String pageAnalysis() {
         return "analysis";

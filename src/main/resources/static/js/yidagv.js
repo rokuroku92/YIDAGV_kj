@@ -1,4 +1,3 @@
-var baseUrl = window.location.origin + "/YIDAGV";
 //const notificationDict = {1: "PCB測試", 2: "PCB外線", 3: "PCB外AOI", 4: "PCB網印", 5: "CNC二廠", 6: "FQC", 7: "BGA整面C", 8: "棕化", 9: "內層線路", 10: "Suep", 11: "FVI", 12: "PCB噴塗", 13: "BGA整面A", 14: "CNC一廠", 15: "Routing"};
 //const stationsDict = {1: "1-1", 2: "1-2", 3: "1-3", 4: "1-4", 5: "1-5", 6: "2-1", 7: "2-2", 8: "2-3", 9: "2-4", 10: "2-5", 11: "3-1", 12: "3-2", 13: "3-3", 14: "3-4", 15: "3-5"};
 const notificationDict = {};
@@ -303,7 +302,7 @@ function updateStationStatus(data){
 
 function updateMessage(data){
     document.getElementById("message").innerHTML = data[0].content;
-    console.log(data[0]);
+    // console.log(data[0]);
 }
 
 function bindEl(){
