@@ -1,4 +1,4 @@
-package com.yid.agv.model;
+package com.yid.agv.backend.task;
 
 public class QTask {
     private String taskNumber;

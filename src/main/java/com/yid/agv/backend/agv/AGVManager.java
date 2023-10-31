@@ -1,7 +1,6 @@
-package com.yid.agv.backend.datastorage;
+package com.yid.agv.backend.agv;
 
 
-import com.yid.agv.model.AgvStatus;
 import com.yid.agv.repository.AGVIdDao;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;

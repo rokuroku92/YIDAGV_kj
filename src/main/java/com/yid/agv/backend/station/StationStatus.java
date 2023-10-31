@@ -1,4 +1,4 @@
-package com.yid.agv.model;
+package com.yid.agv.backend.station;
 
 public class StationStatus {
 

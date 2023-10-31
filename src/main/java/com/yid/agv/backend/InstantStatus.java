@@ -1,12 +1,12 @@
 package com.yid.agv.backend;
 
-import com.yid.agv.backend.datastorage.AGVManager;
-import com.yid.agv.backend.datastorage.StationManager;
-import com.yid.agv.backend.datastorage.TaskQueue;
-import com.yid.agv.model.AgvStatus;
-import com.yid.agv.model.QTask;
+import com.yid.agv.backend.agv.AGVManager;
+import com.yid.agv.backend.station.StationManager;
+import com.yid.agv.backend.task.TaskQueue;
+import com.yid.agv.backend.agv.AgvStatus;
+import com.yid.agv.backend.task.QTask;
 import com.yid.agv.model.Station;
-import com.yid.agv.model.StationStatus;
+import com.yid.agv.backend.station.StationStatus;
 import com.yid.agv.repository.*;
 import com.yid.agv.service.HomePageService;
 import jakarta.annotation.PostConstruct;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -94,7 +93,7 @@ public class InstantStatus {
         }
     }
 
-    @Scheduled(fixedRate = 1000) // 每秒執行
+//    @Scheduled(fixedRate = 1000) // 每秒執行
     public void updateAgvStatuses() {
         // 抓取AGV狀態，並更新到agvStatuses
 //        String[] agvStatusData = testFakeData.crawlAGVStatus().orElse(new String[0]); // TODO: Fake data
@@ -184,6 +183,7 @@ public class InstantStatus {
         }
 
         // data[5] agv狀態
+//        if (!Objects.equals(lastAgvStatusData[i], data[5].trim()) || iOffline[i]) {
         if (!Objects.equals(lastAgvStatusData[i], data[5].trim()) || iOffline[i]) {
             updateAgvStatus(agvStatus, data, agvTitle, i);
             lastAgvStatusData[i] = data[5].trim();
@@ -412,7 +412,7 @@ public class InstantStatus {
     private final boolean[] callerStationStatus = new boolean[15];
     private final boolean[] iCallerConn = new boolean[14];
     private final int[] callerOfflineSec = new int[14];
-    @Scheduled(fixedRate = 1000) // 每秒執行
+//    @Scheduled(fixedRate = 1000) // 每秒執行
     public void updateStationStatuses() {
         // 抓取Station狀態與Booking，並更新到stationStatuses
         StationStatus[] notBookedStationStatuses = new StationStatus[15];

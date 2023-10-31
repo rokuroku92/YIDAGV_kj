@@ -1,9 +1,9 @@
 package com.yid.agv.backend;
 
-import com.yid.agv.backend.datastorage.AGVManager;
-import com.yid.agv.backend.datastorage.TaskQueue;
-import com.yid.agv.model.AgvStatus;
-import com.yid.agv.model.QTask;
+import com.yid.agv.backend.agv.AGVManager;
+import com.yid.agv.backend.task.TaskQueue;
+import com.yid.agv.backend.agv.AgvStatus;
+import com.yid.agv.backend.task.QTask;
 import com.yid.agv.model.Station;
 import com.yid.agv.repository.AnalysisDao;
 import com.yid.agv.repository.NotificationDao;
@@ -12,7 +12,6 @@ import com.yid.agv.repository.TaskDao;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ public class ProcessTasks {
 
     private static boolean isRetrying = false;
 
-    @Scheduled(fixedRate = 5000)
+//    @Scheduled(fixedRate = 5000)
     public void dispatchTasks() {
         if(isRetrying || InstantStatus.iTask)return;
         if(agvManager.getAgvStatus(1).getStatus() != 2) return;  // AGV未連線則無法派遣 TODO: 改成2，原4
@@ -239,9 +238,9 @@ public class ProcessTasks {
         System.out.println("toStandbyTask.getNotificationStationId(): "+toStandbyTask.getNotificationStationId());
         System.out.println("toStandbyTask.getModeId(): "+toStandbyTask.getModeId());
 
-        taskDao.insertTask(toStandbyTask.getTaskNumber(), formattedDateTime, Integer.toString(toStandbyTask.getAgvId()),
-                Integer.toString(toStandbyTask.getStartStationId()), Integer.toString(toStandbyTask.getTerminalStationId()),
-                Integer.toString(toStandbyTask.getNotificationStationId()), Integer.toString(toStandbyTask.getModeId()));
+//        taskDao.insertTask(toStandbyTask.getTaskNumber(), formattedDateTime, Integer.toString(toStandbyTask.getAgvId()),
+//                Integer.toString(toStandbyTask.getStartStationId()), Integer.toString(toStandbyTask.getTerminalStationId()),
+//                Integer.toString(toStandbyTask.getNotificationStationId()), Integer.toString(toStandbyTask.getModeId()));
         dispatchTaskToAGV(notificationDao, toStandbyTask, agvStatus.getPlace(), 1);
     }
 

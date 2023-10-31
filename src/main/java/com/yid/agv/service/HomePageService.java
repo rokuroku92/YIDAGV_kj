@@ -1,7 +1,9 @@
 package com.yid.agv.service;
 
-import com.yid.agv.backend.datastorage.AGVManager;
-import com.yid.agv.backend.datastorage.StationManager;
+import com.yid.agv.backend.agv.AGVManager;
+import com.yid.agv.backend.agv.AgvStatus;
+import com.yid.agv.backend.station.StationManager;
+import com.yid.agv.backend.station.StationStatus;
 import com.yid.agv.model.*;
 import com.yid.agv.repository.*;
 import jakarta.annotation.PostConstruct;

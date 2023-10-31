@@ -16,7 +16,7 @@ public class MessageDataDaoImpl implements MessageDataDao {
 
     @Override
     public List<MessageData> queryMessageData(){
-        String sql = "SELECT * FROM `message_data`";
+        String sql = "SELECT * FROM `notification_history_message_data`";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(MessageData.class));
     }
 }
