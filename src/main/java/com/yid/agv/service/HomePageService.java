@@ -92,9 +92,6 @@ public class HomePageService {
     public List<Station> queryStations(){
         return stationDao.queryStations();
     }
-    public List<NotificationStation> queryNotificationStations(){
-        return stationDao.queryNotificationStations();
-    }
     public List<MessageData> queryMessageData(){return messageDataDao.queryMessageData();}
 
     public List<Mode> queryModes(){

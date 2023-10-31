@@ -21,7 +21,7 @@ public class NotificationDaoImpl implements NotificationDao {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Notification.class));
     }
     @Override
-    public List<Notification> queryNotificationsByDate(String date){
+    public List<Notification> queryNotificationsByDate(String date){  // date 2023-10-31 YYYY-MM-DD
         String sql = "SELECT nh.id, ntd.name, DATE_FORMAT(nh.create_time, '%Y%m%d%H%i%s') AS create_time, " +
                 "md.level, md.content FROM notification_history nh INNER JOIN notification_history_title_data ntd ON nh.title_id = ntd.id " +
                 "INNER JOIN notification_history_message_data md ON nh.message_id = md.id WHERE DATE_FORMAT(nh.create_time, '%Y%m%d') = ? ORDER BY nh.create_time DESC";
@@ -35,7 +35,7 @@ public class NotificationDaoImpl implements NotificationDao {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Notification.class));
     }
     @Override
-    public List<Notification> queryNotifications(){
+    public List<Notification> queryNotifications(){  // LIMIT 100
         String sql = "SELECT nh.id, ntd.name, DATE_FORMAT(nh.create_time, '%Y%m%d%H%i%s') AS create_time, " +
                 "md.level, md.content FROM notification_history nh INNER JOIN notification_history_title_data ntd ON nh.title_id = ntd.id " +
                 "INNER JOIN notification_history_message_data md ON nh.message_id = md.id ORDER BY nh.create_time DESC LIMIT 100";

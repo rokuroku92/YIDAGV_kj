@@ -1,0 +1,69 @@
+package com.yid.agv.repository.impls;
+
+import com.yid.agv.model.TaskDetail;
+import com.yid.agv.model.TaskList;
+import com.yid.agv.repository.TaskDetailDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public class TaskDetailDaoImpl implements TaskDetailDao {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Override
+    public List<TaskDetail> queryTaskDetailsByTaskNumber(String taskNumber){
+        String sql = "SELECT td.id, td.task_number, tdt.name AS title, td.sequence, sd.name AS start, sd.tag AS start_tag, " +
+                "sdd.name AS terminal, sdd.tag AS terminal_tag, md.mode AS mode, md.memo AS mode_memo, td.status FROM task_detail td " +
+                "INNER JOIN task_detail_title tdt ON td.title_id = tdt.id " +
+                "LEFT JOIN station_data sd ON td.start_id = sd.id " +
+                "LEFT JOIN station_data sdd ON td.terminal_id = sdd.id " +
+                "INNER JOIN mode_data md ON td.mode_id = md.id WHERE task_number = ? ORDER BY td.sequence";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(TaskDetail.class), taskNumber);
+    }
+
+    @Override
+    public List<TaskDetail> queryAllTaskDetails(){
+        String sql = "SELECT td.id, td.task_number, tdt.name AS title, td.sequence, sd.name AS start, sd.tag AS start_tag, " +
+                "sdd.name AS terminal, sdd.tag AS terminal_tag, md.mode AS mode, md.memo AS mode_memo, td.status FROM task_detail td " +
+                "INNER JOIN task_detail_title tdt ON td.title_id = tdt.id " +
+                "LEFT JOIN station_data sd ON td.start_id = sd.id " +
+                "LEFT JOIN station_data sdd ON td.terminal_id = sdd.id " +
+                "INNER JOIN mode_data md ON td.mode_id = md.id ORDER BY td.task_number DESC, td.sequence";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(TaskDetail.class));
+    }
+
+    @Override
+    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, String startId, String terminalId, String modeId){
+        String sql = "INSERT INTO `task_detail`(`task_number`, `title_id`, `sequence`, `start_id`, `terminal_id`, `mode_id`) " +
+                "VALUES(?, ?, ?, ?, ?, ?)";
+
+        // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, startId, terminalId, modeId);
+        return (rowsAffected > 0);
+    }
+
+    @Override
+    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, String modeId){
+        String sql = "INSERT INTO `task_detail`(`task_number`, `title_id`, `sequence`, `mode_id`) " +
+                "VALUES(?, ?, ?, ?)";
+
+        // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, modeId);
+        return (rowsAffected > 0);
+    }
+
+    @Override
+    public boolean updateStatusByTaskNumberAndSequence(String taskNumber, int sequence, int status){
+        String sql = "UPDATE `task_detail` SET `status` = ? WHERE `task_number` = ? AND `sequence` = ?";
+
+        // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
+        int rowsAffected = jdbcTemplate.update(sql, status, taskNumber, sequence);
+        return (rowsAffected > 0);
+    }
+}

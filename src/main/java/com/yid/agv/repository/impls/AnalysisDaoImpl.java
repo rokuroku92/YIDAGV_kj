@@ -18,25 +18,25 @@ public class AnalysisDaoImpl implements AnalysisDao {
     private JdbcTemplate jdbcTemplate;
     @Override
     public List<Analysis> queryAnalysisByAGV(Integer agvId){
-        String sql = "select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
-                     "from analysis a where agv_id=? order by year, month, day";
+        String sql = "SELECT a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
+                     "FROM analysis a WHERE agv_id=? ORDER BY year, month, day";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId);
     }
     @Override
     public List<Analysis> queryAnalysisRecentlyByAGV(Integer agvId){
-        String sql = "select * from (select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
-                     "from analysis a where agv_id=? order by a.analysis_id DESC LIMIT 14)a order by analysis_id";
+        String sql = "SELECT * FROM (select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
+                     "FROM analysis a WHERE agv_id=? ORDER BY a.analysis_id DESC LIMIT 14)a ORDER BY analysis_id";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId);
     }
     @Override
     public List<Analysis> queryAnalysisByAGVAndYearAndMonth(Integer agvId, Integer year, Integer month){
-        String sql = "select a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
-                     "from analysis a where agv_id=? and year=? and month=? order by day";
+        String sql = "SELECT a.analysis_id, a.agv_id, a.year, a.month, a.day, a.week, a.working_minute, a.open_minute, a.task " +
+                     "FROM analysis a WHERE agv_id=? AND year=? AND month=? ORDER BY day";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Analysis.class), agvId, year, month);
     }
     @Override
     public List<Map<String, Object>> getAnalysisYearsAndMonths(){
-        String sql = "select DISTINCT a.year,a.month from analysis a order by year, month";
+        String sql = "SELECT DISTINCT a.year,a.month FROM analysis a ORDER BY year, month";
         return jdbcTemplate.queryForList(sql);
     }
     @Override
