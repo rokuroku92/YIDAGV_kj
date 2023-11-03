@@ -9,9 +9,9 @@ public class TaskDetail {
     private String title;
     private int sequence;
     private String start;
-    private Integer startTag;
+    private Integer startId;
     private String terminal;
-    private Integer terminalTag;
+    private Integer terminalId;
     private int mode;
     private String modeMemo;
     private int status;

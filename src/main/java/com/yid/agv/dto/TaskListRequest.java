@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class TaskListFront {
+public class TaskListRequest {
     private int mode;
     private String terminal;
     private List<Task> tasks;

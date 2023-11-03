@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface StationDao {
     List<Station> queryStations();
-    List<String> queryStandbyTags();
+    List<Station> queryStandbyStations();
 }

@@ -11,4 +11,12 @@ public enum Phase {
     public int getValue(){
         return value;
     }
+    public static Phase valueOfByValue(int value) {
+        for (Phase phase : Phase.values()) {
+            if (phase.getValue() == value) {
+                return phase;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant with value: " + value);
+    }
 }

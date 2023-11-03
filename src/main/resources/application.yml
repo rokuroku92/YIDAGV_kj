@@ -9,11 +9,9 @@ agvControl:
 #  url: http://localhost:20101
 
 agv:
-  low_battery: 70  # AGV電量低於多少時，派遣回待命點
-  low_battery_duration: 60  # AGV電量低於多少時，派遣回待命點
-
-caller:
-  offline_duration: 20
+  low_battery: 70  # AGV電量低於多少算低電量
+  low_battery_duration: 60  # AGV低電量持續多久時，派遣回待命點
+  obstacle_duration: 30  # 前有障礙多久時要發出警告
 
 http:
   max_retry: 3

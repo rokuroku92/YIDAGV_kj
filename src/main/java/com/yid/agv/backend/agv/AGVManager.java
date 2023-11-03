@@ -13,24 +13,23 @@ import java.util.Map;
 public class AGVManager {
     @Autowired
     private AGVIdDao agvIdDao;
-    private final Map<Integer, AgvStatus> agvStatusMap;
+    private final Map<Integer, AGV> agvStatusMap;
 
-    private AGVManager(){
+    public AGVManager(){
         agvStatusMap = new HashMap<>();
     }
 
-    @SuppressWarnings("unused")
-    private static class Holder{
-        private static final AGVManager INSTANCE = new AGVManager();
-    }
-
     @PostConstruct
-    public void _init() {
-        agvIdDao.queryAGVList().forEach(agvId -> agvStatusMap.put(agvId.getId(), new AgvStatus()));
+    public void initialize() {
+        agvIdDao.queryAGVList().forEach(agvId -> agvStatusMap.put(agvId.getId(), new AGV(agvId.getId())));
         System.out.println("Initialize agvStatusMap: "+agvStatusMap);
     }
 
-    public AgvStatus getAgvStatus(int agvId){
+    public int getAgvSize(){
+        return agvStatusMap.size();
+    }
+
+    public AGV getAgv(int agvId){
         return agvStatusMap.get(agvId);
     }
 
@@ -38,8 +37,8 @@ public class AGVManager {
         return agvStatusMap.size();
     }
 
-    public AgvStatus[] getAgvStatusCopyArray(){
-        return agvStatusMap.values().toArray(AgvStatus[]::new);
+    public AGV[] getAgvCopyArray(){
+        return agvStatusMap.values().toArray(AGV[]::new);
     }
 
 }

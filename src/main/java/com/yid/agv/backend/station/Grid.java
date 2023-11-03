@@ -1,15 +1,13 @@
 package com.yid.agv.backend.station;
 
-public class Grid {
-    /* status
-     * 0 空狀態
-     * 1 Booked
-     * 2 occupied
-     * 3 over time */
+import com.yid.agv.model.GridList;
+import lombok.Data;
 
+@Data
+public class Grid {
     public enum Status{
-        FREE(0), BOOKED(1), OCCUPIED(2),
-        OVER_TIME(3), DISABLE(6);
+        FREE(0), BOOKED(1), OCCUPIED(2), OVER_TIME(3),
+        DISABLE(6);
         private final int value;
         Status(int value) {
             this.value = value;
@@ -21,13 +19,20 @@ public class Grid {
 
     }
 
-    private int status;
+    private String gridName;
+    private int stationId;
+    private Status status;
 
-    public int getStatus() {
-        return status;
-    }
+    public Grid(GridList gridList) {
+        this.gridName = gridList.getStation();
+        this.stationId = gridList.getId();
+        int statusValue = gridList.getStatus();
 
-    public void setStatus(StationStatus.Status status) {
-        this.status = status.getValue();
+        for (Status statusEnum : Status.values()) {
+            if (statusEnum.getValue() == statusValue) {
+                this.status = statusEnum;
+                break;
+            }
+        }
     }
 }

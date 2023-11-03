@@ -1,7 +1,7 @@
 package com.yid.agv.controller;
 
 import com.google.gson.Gson;
-import com.yid.agv.dto.TaskListFront;
+import com.yid.agv.dto.TaskListRequest;
 import com.yid.agv.service.AnalysisService;
 
 import com.yid.agv.service.HomePageService;
@@ -166,8 +166,9 @@ public class ApiController {
 //    }
 
     @PostMapping(value = "/sendtasklist")
-    public ResponseEntity<String> handleTaskList(@RequestBody TaskListFront jsonData){
+    public ResponseEntity<String> handleTaskList(@RequestBody TaskListRequest jsonData){
         System.out.println(jsonData);
+
         return ResponseEntity.ok("Received and processed JSON data.");
     }
 }

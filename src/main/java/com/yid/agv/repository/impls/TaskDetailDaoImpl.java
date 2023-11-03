@@ -1,7 +1,6 @@
 package com.yid.agv.repository.impls;
 
 import com.yid.agv.model.TaskDetail;
-import com.yid.agv.model.TaskList;
 import com.yid.agv.repository.TaskDetailDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -18,8 +17,8 @@ public class TaskDetailDaoImpl implements TaskDetailDao {
 
     @Override
     public List<TaskDetail> queryTaskDetailsByTaskNumber(String taskNumber){
-        String sql = "SELECT td.id, td.task_number, tdt.name AS title, td.sequence, sd.name AS start, sd.tag AS start_tag, " +
-                "sdd.name AS terminal, sdd.tag AS terminal_tag, md.mode AS mode, md.memo AS mode_memo, td.status FROM task_detail td " +
+        String sql = "SELECT td.id, td.task_number, tdt.name AS title, td.sequence, sd.name AS start, sd.id AS start_id, " +
+                "sdd.name AS terminal, sdd.id AS terminal_id, md.mode AS mode, md.memo AS mode_memo, td.status FROM task_detail td " +
                 "INNER JOIN task_detail_title tdt ON td.title_id = tdt.id " +
                 "LEFT JOIN station_data sd ON td.start_id = sd.id " +
                 "LEFT JOIN station_data sdd ON td.terminal_id = sdd.id " +

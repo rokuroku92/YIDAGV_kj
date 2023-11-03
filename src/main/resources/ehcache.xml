@@ -1,0 +1,17 @@
+<ehcache>
+    <defaultCache
+            maxElementsInMemory="100"
+            eternal="false"
+            timeToIdleSeconds="60"
+            timeToLiveSeconds="60"
+            overflowToDisk="false"
+    />
+
+    <cache name="DBCache"
+           maxElementsInMemory="50"
+           eternal="false"
+           timeToIdleSeconds="1"
+           timeToLiveSeconds="1"
+           overflowToDisk="false"
+    />
+</ehcache>
