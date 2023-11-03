@@ -1,4 +1,4 @@
-CREATE DATABASE `YIDAGV`; -- 建造DATABASE
+CREATE DATABASE `AGV_WTools`;
 
 CREATE TABLE `agv_data`( -- 建造agv_data TABLE
 	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
@@ -13,10 +13,14 @@ CREATE TABLE `station_data`( -- 建造station_data TABLE 車站
     `memo` varchar(50) NOT NULL -- 備忘錄
 );
 
-CREATE TABLE `notification_station_data`( -- 建造notification_station_data TABLE 通知站
+CREATE TABLE `grid_list`( -- 建造station_data TABLE 車站
 	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
-    `name` varchar(20) NOT NULL, -- 通知站名稱
-    `memo` varchar(50) NOT NULL -- 備忘錄
+    `station_id` int NOT NULL UNIQUE,FOREIGN KEY (`station_id`) REFERENCES `station_data`(`id`)ON DELETE CASCADE, -- 車站ID
+    `status` int NOT NULL, -- 格位狀態 0:free|1:booked|2:occupied|3:over time|6:disable
+    `work_number_1` varchar(50),`work_number_2` varchar(50),`work_number_3` varchar(50),`work_number_4` varchar(50), -- 工單號碼
+    `object_name_1` varchar(50),`object_name_2` varchar(50),`object_name_3` varchar(50),`object_name_4` varchar(50), -- 品名
+    `object_number_1` varchar(50),`object_number_2` varchar(50),`object_number_3` varchar(50),`object_number_4` varchar(50), -- 物料號碼
+    `create_time` varchar(20) -- 創建時間 20231026141155
 );
 
 CREATE TABLE `mode_data`( -- 建造mode TABLE
@@ -26,37 +30,67 @@ CREATE TABLE `mode_data`( -- 建造mode TABLE
     `memo` varchar(50) NOT NULL -- 備忘錄
 );
 
-CREATE TABLE `message_data`( -- 建造message_data TABLE for notification_history
+
+CREATE TABLE `task_list`( -- 建造task_list TABLE
+	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
+    `task_number` varchar(20) unique, -- 任務ID #202310260001
+    `create_task_time` varchar(20), -- 創建時間 20231026141155
+    `steps` int not null, -- 步驟數量
+    `progress` int not null default 0, -- 任務進度
+    `phase_id` int not null default 1,FOREIGN KEY (`phase_id`) REFERENCES `task_phase`(`id`)ON DELETE CASCADE, -- 任務階段
+    `status` int NOT NULL default 0 -- 是否完成
+);
+CREATE INDEX idx_task_number ON task_list (task_number);
+
+CREATE TABLE `task_phase`( -- 建造task_list TABLE
+	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
+    `name` varchar(20) -- 主鍵
+);
+
+CREATE TABLE `task_detail_title`( -- 建造task_detail TABLE
+	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
+    `name` varchar(20) -- 名字
+);
+
+CREATE TABLE `task_detail`( -- 建造task_detail TABLE
+	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
+    `task_number` varchar(20), -- 任務ID
+    `title_id` int NOT NULL,FOREIGN KEY (`title_id`) REFERENCES `task_detail_title`(`id`)ON DELETE CASCADE, -- title ID
+    `sequence` int NOT NULL, -- 順序
+    `start_id` int,FOREIGN KEY (`start_id`) REFERENCES `station_data`(`id`)ON DELETE CASCADE, -- 車站ID
+    `terminal_id` int,FOREIGN KEY (`terminal_id`) REFERENCES `station_data`(`id`)ON DELETE CASCADE, -- 車站ID
+    `mode_id` int NOT NULL,FOREIGN KEY (`mode_id`) REFERENCES `mode_data`(`id`)ON DELETE CASCADE, -- 模式ID
+    `status` int NOT NULL default 0 -- 是否完成
+);
+CREATE INDEX idx_task_number ON task_detail (task_number);
+
+CREATE TABLE `now_task_list`( -- 建造task_list TABLE
+	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
+    `task_number` varchar(20) unique, -- 任務ID #202310260001
+    `steps` int not null, -- 步驟數量
+    `progress` int not null default 0, -- 任務進度
+    `phase_id` int not null default 1,FOREIGN KEY (`phase_id`) REFERENCES `task_phase`(`id`)ON DELETE CASCADE -- 任務階段
+);
+CREATE INDEX idx_task_number ON now_task_list (task_number);
+
+
+CREATE TABLE `notification_history_message_data`( -- 建造message_data TABLE for notification_history
 	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
     `level` int NOT NULL, -- 通知等級
     `content` varchar(50) NOT NULL -- 通知訊息
 );
 
-CREATE TABLE `notification_title_data`( -- 建造notification_title_data TABLE for notification_history
+CREATE TABLE `notification_history_title_data`( -- 建造notification_title_data TABLE for notification_history
 	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
     `name` varchar(20) NOT NULL, -- 名稱
     `memo` varchar(30) NOT NULL -- 備忘錄
 );
 
-
-CREATE TABLE `task_history`( -- 建造task_history TABLE
-	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
-    `task_number` varchar(20) unique, -- 任務ID
-    `create_task_time` varchar(20), -- 創建時間
-    `agv_id` int NOT NULL,FOREIGN KEY (`agv_id`) REFERENCES `agv_data`(`id`)ON DELETE CASCADE, -- agvID
-    `start_id` int,FOREIGN KEY (`start_id`) REFERENCES `station_data`(`id`)ON DELETE CASCADE, -- 車站ID
-    `terminal_id` int,FOREIGN KEY (`terminal_id`) REFERENCES `station_data`(`id`)ON DELETE CASCADE, -- 車站ID
-    `notification_id` int,FOREIGN KEY (`notification_id`) REFERENCES `notification_station_data`(`id`)ON DELETE CASCADE, -- 通知站ID
-    `mode_id` int NOT NULL,FOREIGN KEY (`mode_id`) REFERENCES `mode_data`(`id`)ON DELETE CASCADE, -- 模式ID
-    `status` int NOT NULL default 0 -- 是否完成
-);
-CREATE INDEX idx_task_number ON task_history (task_number);
-
 CREATE TABLE `notification_history`( -- 建造notify_history TABLE
 	`id` int AUTO_INCREMENT PRIMARY KEY, -- 主鍵
-    `title_id` int NOT NULL,FOREIGN KEY (`title_id`) REFERENCES `notification_title_data`(`id`)ON DELETE CASCADE, -- 標題
-    `message_id` int NOT NULL,FOREIGN KEY (`message_id`) REFERENCES `message_data`(`id`)ON DELETE CASCADE, -- 內容
-    `create_time` varchar(20) -- 創建時間
+    `title_id` int NOT NULL,FOREIGN KEY (`title_id`) REFERENCES `notification_history_title_data`(`id`)ON DELETE CASCADE, -- 標題
+    `message_id` int NOT NULL,FOREIGN KEY (`message_id`) REFERENCES `notification_history_message_data`(`id`)ON DELETE CASCADE, -- 內容
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP, INDEX `idx_create_time` (`create_time`) -- 創建時間
 );
 
 CREATE TABLE `analysis`( -- 建造analysis TABLE
