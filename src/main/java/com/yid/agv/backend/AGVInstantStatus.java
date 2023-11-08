@@ -10,6 +10,7 @@ import com.yid.agv.service.HomePageService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -59,18 +60,9 @@ public class AGVInstantStatus {
     public void initialize() {
         stationIdTagMap = stationDao.queryStations().stream()
                 .collect(Collectors.toMap(Station::getId, Station::getTag));
-//        int agvSize = agvIdDao.queryAGVList().size();
-//        lastAgvStatusData = new String[agvSize];
-//        iOffline = new boolean[agvSize];
-//        agvLowBattery = new boolean[agvSize];
-//        lowBatteryCount = new int[agvSize];
-//        TODO:  lastBattery = new boolean[agvSize];
-//        tagError = new boolean[agvSize];
-//        lastTaskBuffer = new boolean[agvSize];
-//        time = new int[agvSize];
     }
 
-//    @Scheduled(fixedRate = 1000) // 每秒執行
+    @Scheduled(fixedRate = 1000) // 每秒執行
     public void updateAgvStatuses() {
         // 抓取AGV狀態，並更新到agvStatuses
         String[] agvStatusData = crawlAGVStatus().orElse(new String[0]);
@@ -222,25 +214,6 @@ public class AGVInstantStatus {
                 agv.setReDispatchCount(0);
             }
         }
-
-//        if (!iStandbyTask){
-//            if(reDispatch < 3) {
-//                if(!ProcessTasks.getIsRetrying()){
-//                    notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_EXECUTION_TASK);
-//                    doReDispatch(agv.getPlace());
-//                    reDispatch++;
-//                }
-//            } else if (reDispatch == 3) {
-//                ProcessTasks.failedTask(taskQueue, notificationDao, taskDao);
-//                reDispatch=0;
-//                iTask = false;
-//            }
-//        } else {
-//            notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_EXECUTION_TASK);
-//            ProcessTasks.failedGoStandbyTask(taskDao);
-//            iStandbyTask = false;
-//            iTask = false;
-//        }
     }
 
     private void tagErrorDispatch(AGV agv){
@@ -252,14 +225,9 @@ public class AGVInstantStatus {
     }
 
     private void handleExecutingTask(AGV agv){
-//        if(!iStandbyTask) {
-////            agv.setTask(Optional.ofNullable(taskQueue.getNowTaskNumber()).orElse(""));
-//            CountUtilizationRate.isWorking[i] = true;
-//        }
         if(!agv.getTask().getTaskNumber().startsWith("#SB")){
             CountUtilizationRate.isWorking[agv.getId()-1] = true;
         }
-//        iTask = true;
     }
 
     private void handleCompletedTask(AGV agv){

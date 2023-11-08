@@ -62,14 +62,35 @@ public class TaskListManager {
         return taskDetailsMap.get(taskNumber);
     }
 
-    public boolean setTaskListPhase(NowTaskList nowTaskList, Phase phase){
+    public int getTaskDetailLengthByTaskNumber(String taskNumber){
+        return taskDetailsMap.get(taskNumber).size();
+    }
+
+    public void setTaskListPhase(NowTaskList nowTaskList, Phase phase){
         nowTaskList.setPhase(phase);
-        return nowTaskListDao.updateNowTaskListPhase(nowTaskList.getTaskNumber(), phase) &&
-                taskListDao.updateTaskListPhase(nowTaskList.getTaskNumber(), phase);
+        nowTaskListDao.updateNowTaskListPhase(nowTaskList.getTaskNumber(), phase);
+        taskListDao.updateTaskListPhase(nowTaskList.getTaskNumber(), phase);
+    }
+
+    public void setTaskListProgress(NowTaskList nowTaskList, int progress){
+        nowTaskList.setProgress(progress);
+        nowTaskListDao.updateNowTaskListProgress(nowTaskList.getTaskNumber(), progress);
+        taskListDao.updateTaskListProgress(nowTaskList.getTaskNumber(), progress);
+    }
+
+    public void setTaskListProgressBySequence(String taskNumber, int sequence){
+        int steps = getTaskDetailLengthByTaskNumber(taskNumber);
+        nowTaskListDao.updateNowTaskListProgress(taskNumber, (sequence/steps)*99);
+        taskListDao.updateTaskListProgress(taskNumber, (sequence/steps)*99);
     }
 
     public void completedTaskList(int taskProcessId){
+        String taskNumber = getNowTaskListByTaskProcessId(taskProcessId).getTaskNumber();
+        nowTaskListDao.deleteNowTaskList(taskNumber);
+        taskListDao.updateTaskListStatus(taskNumber, 100);
+        taskListDao.updateTaskListProgress(taskNumber, 100);
         taskListMap.put(taskProcessId, null);
+        taskDetailsMap.put(taskNumber, null);
     }
 
     public int getTaskListMapSize(){

@@ -16,13 +16,23 @@ public interface TaskDetailDao {
             return value;
         }
     }
+    enum Mode{
+        DEFAULT(1), TRANSPORT(2), CALL_ELEVATOR(3), ELEVATOR_TRANSPORT(4);
+        private final int value;
+        Mode(int value) {
+            this.value = value;
+        }
+        public int getValue(){
+            return value;
+        }
+    }
     List<TaskDetail> queryTaskDetailsByTaskNumber(String taskNumber);
 
     List<TaskDetail> queryAllTaskDetails();
 
-    boolean insertTaskDetail(String taskNumber, Title title, int sequence, String startId, String terminalId, String modeId);
+    boolean insertTaskDetail(String taskNumber, Title title, int sequence, String startId, String terminalId, Mode mode);
 
-    boolean insertTaskDetail(String taskNumber, Title title, int sequence, String modeId);
+    boolean insertTaskDetail(String taskNumber, Title title, int sequence, Mode mode);
 
     boolean updateStatusByTaskNumberAndSequence(String taskNumber, int sequence, int status);
 

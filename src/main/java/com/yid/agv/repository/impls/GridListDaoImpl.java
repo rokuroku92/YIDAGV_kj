@@ -1,5 +1,6 @@
 package com.yid.agv.repository.impls;
 
+import com.yid.agv.backend.station.Grid;
 import com.yid.agv.model.GridList;
 import com.yid.agv.repository.GridListDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,18 @@ public class GridListDaoImpl implements GridListDao {
     }
 
     @Override
-    public boolean updateStatus(int stationId, int status){
+    public boolean updateStatus(int stationId, Grid.Status status){
         String sql = "UPDATE `grid_list` SET `status` = ? WHERE `station_id` = ?";
 
-        int rowsAffected = jdbcTemplate.update(sql, status, stationId);
+        int rowsAffected = jdbcTemplate.update(sql, status.getValue(), stationId);
+        return (rowsAffected > 0);
+    }
+
+    @Override
+    public boolean updateWorkOrder(int stationId, String createTime){
+        String sql = "UPDATE `grid_list` SET `create_time` = ? WHERE `station_id` = ?";
+
+        int rowsAffected = jdbcTemplate.update(sql, createTime, stationId);
         return (rowsAffected > 0);
     }
 

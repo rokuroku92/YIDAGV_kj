@@ -168,7 +168,6 @@ public class ApiController {
     @PostMapping(value = "/sendtasklist")
     public ResponseEntity<String> handleTaskList(@RequestBody TaskListRequest jsonData){
         System.out.println(jsonData);
-
-        return ResponseEntity.ok("Received and processed JSON data.");
+        return ResponseEntity.ok(taskService.addTaskList(jsonData));
     }
 }

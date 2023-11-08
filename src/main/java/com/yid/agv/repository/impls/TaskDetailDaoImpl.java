@@ -38,22 +38,22 @@ public class TaskDetailDaoImpl implements TaskDetailDao {
     }
 
     @Override
-    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, String startId, String terminalId, String modeId){
+    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, String startId, String terminalId, Mode mode){
         String sql = "INSERT INTO `task_detail`(`task_number`, `title_id`, `sequence`, `start_id`, `terminal_id`, `mode_id`) " +
                 "VALUES(?, ?, ?, ?, ?, ?)";
 
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
-        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, startId, terminalId, modeId);
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, startId, terminalId, mode.getValue());
         return (rowsAffected > 0);
     }
 
     @Override
-    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, String modeId){
+    public boolean insertTaskDetail(String taskNumber, Title title, int sequence, Mode mode){
         String sql = "INSERT INTO `task_detail`(`task_number`, `title_id`, `sequence`, `mode_id`) " +
                 "VALUES(?, ?, ?, ?)";
 
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
-        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, modeId);
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, title.getValue(), sequence, mode.getValue());
         return (rowsAffected > 0);
     }
 

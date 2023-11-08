@@ -20,6 +20,16 @@ public class StationDaoImpl implements StationDao {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Station.class));
     }
     @Override
+    public Integer getAreaGridsLength(String areaName){
+        String sql = "SELECT COUNT(*) AS length FROM `station_data` WHERE `name` LIKE ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, areaName+"%");
+    }
+    @Override
+    public List<String> getStationTagByAreaName(String areaName){
+        String sql = "SELECT tag FROM `station_data` WHERE `name` LIKE ?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(String.class), areaName+"%");
+    }
+    @Override
     public List<Station> queryStandbyStations(){
         String sql = "SELECT * FROM `station_data` WHERE `name` LIKE '%-S'";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Station.class));

@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface StationDao {
     List<Station> queryStations();
+    Integer getAreaGridsLength(String areaName);
+    List<String> getStationTagByAreaName(String areaName);
     List<Station> queryStandbyStations();
 }

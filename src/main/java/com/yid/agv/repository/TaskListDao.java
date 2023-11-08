@@ -13,7 +13,7 @@ public interface TaskListDao {
 
     String selectLastTaskListNumber();
 
-    boolean insertTaskList(String taskNumber, String createTime, String step);
+    boolean insertTaskList(String taskNumber, String createTime, int step);
 
     boolean updateTaskListProgress(String taskNumber, int progress);
 

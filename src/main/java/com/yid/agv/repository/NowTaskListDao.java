@@ -8,6 +8,7 @@ import java.util.List;
 public interface NowTaskListDao {
     List<NowTaskList> queryNowTaskLists(int processId);
     List<NowTaskListResponse> queryNowTaskListsResult();
+    boolean insertNowTaskList(String taskNumber, int step);
 
     boolean updateNowTaskListPhase(String taskNumber, Phase phase);
 

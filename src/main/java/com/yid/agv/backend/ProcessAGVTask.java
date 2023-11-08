@@ -2,9 +2,11 @@ package com.yid.agv.backend;
 
 import com.yid.agv.backend.agv.AGV;
 import com.yid.agv.backend.agv.AGVManager;
+import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.backend.agvtask.AGVTaskManager;
 import com.yid.agv.backend.agvtask.AGVQTask;
+import com.yid.agv.backend.tasklist.TaskListManager;
 import com.yid.agv.model.Station;
 import com.yid.agv.repository.AnalysisDao;
 import com.yid.agv.repository.NotificationDao;
@@ -45,6 +47,8 @@ public class ProcessAGVTask {
     private AGVManager agvManager;
     @Autowired
     private GridManager gridManager;
+    @Autowired
+    private TaskListManager taskListManager;
 
 
     private static Map<Integer, Integer> stationIdTagMap;
@@ -63,7 +67,6 @@ public class ProcessAGVTask {
 
         for (int i = 1; i <= agvManager.getAgvSize(); i++){
             AGV agv = agvManager.getAgv(i);
-//            Queue<QTask> taskQueue = taskManager.getTaskQueue(agv.getId());
             if(agv.getStatus() != AGV.Status.ONLINE) continue;  // AGV未連線則無法派遣
             if(agv.getTask() != null) continue;  // AGV任務中
 
@@ -92,31 +95,6 @@ public class ProcessAGVTask {
 
         }
 
-
-
-//        if(agvManager.getAgv(1).getStatus() != 2) return;  // AGV未連線則無法派遣 TODO: 改成2，原4
-//        if (AGVInstantStatus.getAgvLowBattery()[0] && !taskQueue.iEqualsStandbyStation()){
-//            AGVInstantStatus.iStandbyTask = true;
-//            goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1), true);
-//        } else if (taskQueue.iDispatch()) {
-////            InstantStatus.iStandby = false;
-//            QTask goTask = taskQueue.peekTaskWithPlace();
-//            System.out.println("Process dispatch...");
-//            System.out.println(agvManager.getAgvStatus(1).getPlace());
-//            String result = dispatchTaskToAGV(notificationDao, goTask, agvManager.getAgvStatus(1).getPlace(), 1);
-//            if(Objects.requireNonNull(result).equals("OK")){
-//                taskQueue.updateTaskStatus(taskQueue.getNowTaskNumber(), 1);
-//                AGVInstantStatus.startStation = goTask.getStartStationId();
-//                AGVInstantStatus.terminalStation = goTask.getTerminalStationId();
-//            } else if (result.equals("FailedDispatch")) {
-//                System.out.println("發送任務三次皆失敗，已取消任務");
-//                notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK_THREE_TIMES);
-//                taskQueue.failedTask();
-//            }
-//        }else if(taskQueue.isEmpty() && !taskQueue.iEqualsStandbyStation()){
-//            AGVInstantStatus.iStandbyTask = true;
-//            goStandbyTaskByAgvId(notificationDao, taskDao, 1, agvManager.getAgvStatus(1), false);
-//        }
     }
 
     public boolean iEqualsStandbyStation(String place){
@@ -220,10 +198,17 @@ public class ProcessAGVTask {
         if(!task.getTaskNumber().startsWith("#SB")){
             int analysisId = analysisDao.getTodayAnalysisId().get(task.getAgvId() - 1).getAnalysisId();
             analysisDao.updateTask(analysisDao.queryAnalysisByAnalysisId(analysisId).getTask() + 1, analysisId);
-            // TODO: Booked to Occupied
+            String taskStartStation = gridManager.getGridNameByStationId(task.getStartStationId());
+            String taskTerminalStation = gridManager.getGridNameByStationId(task.getTerminalStationId());
+            if (!taskStartStation.startsWith("E-") && !taskTerminalStation.startsWith("E-")){
+                gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // TODO: Booked to Occupied
+            } else {
+                gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // TODO: Booked to Free
+            }
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
         taskDetailDao.updateStatusByTaskNumberAndSequence(task.getTaskNumber(), task.getSequence(), 100);
+        taskListManager.setTaskListProgressBySequence(task.getTaskNumber(), task.getSequence());
         agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
         agv.setTask(null);
     }
@@ -249,7 +234,7 @@ public class ProcessAGVTask {
 
         AGVQTask toStandbyTask = new AGVQTask();
         toStandbyTask.setAgvId(agv.getId());
-        toStandbyTask.setModeId(0);
+        toStandbyTask.setModeId(1);
         toStandbyTask.setStatus(0);
         toStandbyTask.setSequence(1);
         toStandbyTask.setTaskNumber("#SB" + agv.getId() + formattedDateTime);
@@ -269,7 +254,7 @@ public class ProcessAGVTask {
 
         taskDetailDao.insertTaskDetail(toStandbyTask.getTaskNumber(), title, toStandbyTask.getSequence(),
                 Integer.toString(toStandbyTask.getStartStationId()), Integer.toString(toStandbyTask.getTerminalStationId()),
-                Integer.toString(toStandbyTask.getModeId()));
+                TaskDetailDao.Mode.DEFAULT);
         dispatchTaskToAGV(agv);
     }
     public boolean getIsRetrying(){

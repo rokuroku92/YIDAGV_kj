@@ -46,7 +46,7 @@ public class TaskListDaoImpl implements TaskListDao {
         return jdbcTemplate.queryForObject(sql, String.class);
     }
     @Override
-    public boolean insertTaskList(String taskNumber, String createTime, String step){
+    public boolean insertTaskList(String taskNumber, String createTime, int step){
         String sql = "INSERT INTO `task_list`(`task_number`, `create_task_time`, `steps`) VALUES(?, ?, ?)";
 
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句

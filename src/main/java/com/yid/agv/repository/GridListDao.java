@@ -1,12 +1,14 @@
 package com.yid.agv.repository;
 
+import com.yid.agv.backend.station.Grid;
 import com.yid.agv.model.GridList;
 
 import java.util.List;
 
 public interface GridListDao {
     List<GridList> queryAllGrids();
-    boolean updateStatus(int stationId, int status);
+    boolean updateStatus(int stationId, Grid.Status status);
+    boolean updateWorkOrder(int stationId, String createTime);
     boolean updateWorkOrder(int stationId, String createTime, String workNumber, String objectName, String objectNumber);
     boolean updateWorkOrder(int stationId, String createTime, String workNumber1, String workNumber2, String objectName1,
                             String objectName2, String objectNumber1, String objectNumber2);

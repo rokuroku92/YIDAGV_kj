@@ -1,8 +1,10 @@
 package com.yid.agv.backend.agvtask;
 
 
+import com.yid.agv.backend.agv.AGV;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.repository.AGVIdDao;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,9 @@ public class AGVTaskManager {
 
     public AGVTaskManager() {
         taskQueueMap = new HashMap<>();
+    }
+    @PostConstruct
+    public void initialize() {
         agvIdDao.queryAGVList().forEach(agvId -> taskQueueMap.put(agvId.getId(), new ConcurrentLinkedDeque<>()));
     }
 
@@ -38,10 +43,12 @@ public class AGVTaskManager {
         return taskQueueMap.get(agvId).isEmpty();
     }
 
-    public boolean addTaskToQueueByAGVId(int agvId, AGVQTask task) {
+
+
+    public boolean addTaskToQueueByAGVId(AGVQTask task) {
 //        if(taskQueue.size() >= 5)
 //            return false;
-        Queue<AGVQTask> taskQueue = taskQueueMap.get(agvId);
+        Queue<AGVQTask> taskQueue = taskQueueMap.get(task.getAgvId());
         taskQueue.offer(task);
 //        bookedStation[task.getStartStationId()-1] = 1;
 //        bookedStation[task.getTerminalStationId()-1] = 2;

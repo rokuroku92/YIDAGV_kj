@@ -43,6 +43,14 @@ public class NowTaskListDaoImpl implements NowTaskListDao {
     }
 
     @Override
+    public boolean insertNowTaskList(String taskNumber, int step){
+        String sql = "INSERT INTO `now_task_list`(`task_number`, `steps`) VALUES(?, ?)";
+        // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
+        int rowsAffected = jdbcTemplate.update(sql, taskNumber, step);
+        return (rowsAffected > 0);
+    }
+
+    @Override
     public boolean updateNowTaskListPhase(String taskNumber, Phase phase){
         String sql = "UPDATE `now_task_list` SET `phase_id` = ? WHERE `task_number` = ?";
         int rowsAffected = jdbcTemplate.update(sql, phase.getValue(), taskNumber);
