@@ -1,16 +1,13 @@
 package com.yid.agv.service;
 
+import com.yid.agv.backend.agv.AGV;
 import com.yid.agv.backend.agv.AGVManager;
-import com.yid.agv.backend.agv.AgvStatus;
-import com.yid.agv.backend.station.GridManager;
-import com.yid.agv.backend.station.StationStatus;
+import com.yid.agv.backend.elevator.ElevatorManager;
 import com.yid.agv.model.*;
 import com.yid.agv.repository.*;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -21,9 +18,6 @@ public class HomePageService {
     
     @Autowired
     private NotificationDao notificationDao;
-    
-    @Autowired
-    private StationDao stationDao;
 
     @Autowired
     private MessageDataDao messageDataDao;
@@ -35,23 +29,9 @@ public class HomePageService {
     private AGVManager agvManager;
 
     @Autowired
-    private GridManager stationManager;
-
-    @PostConstruct
-    public void initialize() {
-        Arrays.fill(equipmentIAlarm, 0);
-    }
+    private ElevatorManager elevatorManager;
 
     private int iAlarm;
-    private final int[] equipmentIAlarm = new int[14];
-
-    public int[] getEquipmentIAlarm() {
-        return equipmentIAlarm;
-    }
-
-    public void setEquipmentIAlarm(int i, int value) {
-        this.equipmentIAlarm[i] = value;
-    }
 
     public int getIAlarm() {
         return iAlarm;
@@ -61,12 +41,11 @@ public class HomePageService {
         this.iAlarm = iAlarm;
     }
 
-    public AgvStatus[] getAgvStatus(){
-        return agvManager.getAgvStatusCopyArray();
+    public boolean getElevatorObstacleAlarm(){
+        return elevatorManager.getIAlarmObstacle();
     }
-
-    public StationStatus[] getStationStatus(){
-        return stationManager.getStationStatusCopyArray();
+    public AGV[] getAgv(){
+        return agvManager.getAgvCopyArray();
     }
 
     public List<AGVId> queryAGVList(){
@@ -89,10 +68,9 @@ public class HomePageService {
         return notificationDao.queryNotifications();
     }
 
-    public List<Station> queryStations(){
-        return stationDao.queryStations();
+    public List<MessageData> queryMessageData(){
+        return messageDataDao.queryMessageData();
     }
-    public List<MessageData> queryMessageData(){return messageDataDao.queryMessageData();}
 
     public List<Mode> queryModes(){
         return modeDao.queryModes();

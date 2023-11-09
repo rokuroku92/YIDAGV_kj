@@ -5,6 +5,8 @@ import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.backend.agvtask.AGVTaskManager;
 import com.yid.agv.dto.TaskListRequest;
+import com.yid.agv.model.NowTaskListResponse;
+import com.yid.agv.model.TaskList;
 import com.yid.agv.repository.GridListDao;
 import com.yid.agv.repository.NowTaskListDao;
 import com.yid.agv.repository.TaskDetailDao;
@@ -20,9 +22,7 @@ import java.util.List;
 
 @Service
 public class TaskService {
-    
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+
     @Autowired
     private TaskListDao taskListDao;
     @Autowired
@@ -38,28 +38,27 @@ public class TaskService {
     
     private String lastDate;
 
-//    public Map<Integer, Integer> getCompletedTasksMap() {
-//        return AGVInstantStatus.getCallerStationStatusMap();
-//    }
 
 //    public Collection<AGVQTask> getTaskQueue(){
 //        return taskQueue.getTaskQueueCopy();
 //    }
 //
-//    public List<NowTaskListResponse> queryNowTaskLists(){
-//        return nowTaskListDao.queryNowTaskListsResult();
-//    }
-//
-//    public List<TaskList> queryTaskLists(){
-//        return taskListDao.queryTaskLists();
-//    }
-//    public List<TaskList> queryAllTaskLists(){
-//        return taskListDao.queryAllTaskLists();
-//    }
-//
-//    public boolean cancelTask(String taskNumber){
+    public List<NowTaskListResponse> queryNowTaskLists(){
+        return nowTaskListDao.queryNowTaskListsResult();
+    }
+
+    public List<TaskList> queryTaskLists(){
+        return taskListDao.queryTaskLists();
+    }
+    public List<TaskList> queryAllTaskLists(){
+        return taskListDao.queryAllTaskLists();
+    }
+
+    public boolean cancelTask(String taskNumber){
+        // TODO: com
+        return true;
 //        return taskQueue.removeTaskByTaskNumber(taskNumber) && taskListDao.cancelTaskList(taskNumber);
-//    }
+    }
 
     public String addTaskList(TaskListRequest taskListRequest){
         int taskSize = taskListRequest.getTasks().size();
@@ -168,12 +167,11 @@ public class TaskService {
                         gridManager.setGridStatus(taskListRequest.getTasks().get(i).getStartGrid(), Grid.Status.BOOKED);
                     }
                     taskDetailDao.insertTaskDetail(taskNumber, TaskDetailDao.Title.ELEVATOR, ++step, TaskDetailDao.Mode.ELEVATOR_TRANSPORT);
-                    int index=0;
-                    for (int i = taskSize-1; i >= 0; i--) {
+                    for (int i = taskSize-1, index=0; i >= 0; i--, index++) {
                         gridManager.setGridStatus(availableGrids.get(index).getGridName(), Grid.Status.BOOKED);
                         taskDetailDao.insertTaskDetail(taskNumber, TaskDetailDao.Title.AMR_1, ++step,
                                 Integer.toString(gridManager.getGirdStationId("E-".concat(Integer.toString(i+1)))),
-                                Integer.toString(availableGrids.get(index++).getStationId()), TaskDetailDao.Mode.DEFAULT);  // TODO: wait confirm
+                                Integer.toString(availableGrids.get(index).getStationId()), TaskDetailDao.Mode.DEFAULT);  // TODO: wait confirm
                     }
 
                     taskListDao.insertTaskList(taskNumber, formattedDateTime, step);

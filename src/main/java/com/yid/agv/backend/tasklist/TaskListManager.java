@@ -45,10 +45,12 @@ public class TaskListManager {
         taskListMap.forEach((taskProcessId, taskList) -> {
             if(taskList == null) {
                 List<NowTaskList> taskLists = nowTaskListDao.queryNowTaskLists(taskProcessId);
-                NowTaskList doTaskList = taskLists.get(0);
-                if (doTaskList != null){
-                    taskListMap.put(taskProcessId, doTaskList);
-                    taskDetailsMap.put(doTaskList.getTaskNumber(), taskDetailDao.queryTaskDetailsByTaskNumber(doTaskList.getTaskNumber()));
+                if (taskLists.size()>0){
+                    NowTaskList doTaskList = taskLists.get(0);
+                    if (doTaskList != null){
+                        taskListMap.put(taskProcessId, doTaskList);
+                        taskDetailsMap.put(doTaskList.getTaskNumber(), taskDetailDao.queryTaskDetailsByTaskNumber(doTaskList.getTaskNumber()));
+                    }
                 }
             }
         });

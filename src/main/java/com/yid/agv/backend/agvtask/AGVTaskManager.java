@@ -45,7 +45,7 @@ public class AGVTaskManager {
 
 
 
-    public boolean addTaskToQueueByAGVId(AGVQTask task) {
+    public boolean addTaskToQueue(AGVQTask task) {
 //        if(taskQueue.size() >= 5)
 //            return false;
         Queue<AGVQTask> taskQueue = taskQueueMap.get(task.getAgvId());

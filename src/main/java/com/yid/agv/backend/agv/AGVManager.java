@@ -52,8 +52,20 @@ public class AGVManager {
         return agvStatusMap.size();
     }
 
-    public AGV[] getAgvCopyArray(){
-        return agvStatusMap.values().toArray(AGV[]::new);
+    public AGV[] getAgvCopyArray() {
+        return agvStatusMap.values()
+                .stream()
+                .map(originalAGV -> {
+                    AGV copy = new AGV(originalAGV.getId());
+                    copy.setStatus(originalAGV.getStatus());
+                    copy.setPlace(originalAGV.getPlace());
+                    copy.setBattery(originalAGV.getBattery());
+                    copy.setSignal(originalAGV.getSignal());
+                    copy.setTask(originalAGV.getTask());
+                    copy.setTaskStatus(originalAGV.getTaskStatus());
+                    return copy;
+                })
+                .toArray(AGV[]::new);
     }
 
 }

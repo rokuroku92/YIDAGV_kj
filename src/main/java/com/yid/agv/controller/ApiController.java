@@ -2,13 +2,19 @@ package com.yid.agv.controller;
 
 import com.google.gson.Gson;
 import com.yid.agv.dto.TaskListRequest;
+import com.yid.agv.model.AGVId;
+import com.yid.agv.model.Analysis;
 import com.yid.agv.service.AnalysisService;
 
+import com.yid.agv.service.GridService;
 import com.yid.agv.service.HomePageService;
 import com.yid.agv.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -23,147 +29,101 @@ public class ApiController {
     private AnalysisService analysisService;
 
     @Autowired
+    private GridService gridService;
+
+    @Autowired
     private TaskService taskService;
 
-//    @GetMapping(value = "/homepage/agvlist", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-//    public String getAGVList(){
-//        List<AGVId> list = homePageService.queryAGVList();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/completedTasks", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getCompletedTasksJson() {
-//        return gson.toJson(taskService.getCompletedTasksMap());
-//    }
-//
-//    @GetMapping(value = "/homepage/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getTasksJson() {
-//        return gson.toJson(taskService.getTaskQueue());
-////        Queue<QTask> q = new ArrayDeque<>();
-////        QTask t = new QTask();
-////        t.setTaskNumber("#202308010001");
-////        t.setAgvId(1);
-////        t.setModeId(1);
-////        t.setStartStationId(6);
-////        t.setTerminalStationId(12);
-////        t.setNotificationStationId(13);
-////        t.setStatus(0);
-////        QTask t2 = new QTask();
-////        t2.setTaskNumber("#202308010002");
-////        t2.setAgvId(1);
-////        t2.setModeId(1);
-////        t2.setStartStationId(7);
-////        t2.setTerminalStationId(11);
-////        t2.setNotificationStationId(11);
-////        t2.setStatus(1);
-////        q.offer(t);
-////        q.offer(t2);
-////        return gson.toJson(q);
-//    }
-//
-//    @GetMapping(value = "/homepage/tasks/today", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getTodayTask(){
-//        List<Task> list = taskService.queryTodayTasks();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/tasks/all", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getAllTask(){
-//        List<Task> list = taskService.queryAllTasks();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/iAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
-//    public String getIAlarm(){
-//        return Integer.toString(homePageService.getIAlarm());
-//    }
-//
-//    @GetMapping(value = "/homepage/equipmentIAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
-//    public String getEquipmentIAlarm(){
-//        return Arrays.toString(homePageService.getEquipmentIAlarm());
-//    }
-//
-//    @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getNotifications(){
-//        List<Notification> list = homePageService.queryNotifications();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/notification/all", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getAllNotifications(){
-//        List<Notification> list = homePageService.queryAllNotifications();
-//        return gson.toJson(list);
-//    }
-//    @GetMapping(value = "/homepage/agvStatusData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-//    public String getAgvStatusData(){
-//        List<MessageData> list = homePageService.queryMessageData();
-//        return gson.toJson(list);
-//    }
-//    @GetMapping(value = "/homepage/stationsData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-//    public String getStationsData(){
-//        List<Station> list = homePageService.queryStations();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/notificationStationsData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-//    public String getNotificationStationsData(){
-//        List<NotificationStation> list = homePageService.queryNotificationStations();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/modes", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-//    public String getModes(){
-//        List<Mode> list = homePageService.queryModes();
-//        return gson.toJson(list);
-//    }
-//
-//    @GetMapping(value = "/homepage/agv", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getAGVJson() {
-//        return new Gson().toJson(homePageService.getAgvStatus());
-//    }
-//
-//    @GetMapping(value = "/homepage/station", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getStationJson() {
-//        return new Gson().toJson(homePageService.getStationStatus());
-//    }
-//
-//    @GetMapping(value = "/analysis/yyyymm", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String getAnalysisYearsAndMonths(){
-//        List<Map<String, Object>> list = analysisService.getAnalysisYearsAndMonths();
-//        return gson.toJson(list);
-//    }
-//    // 範例路徑 /analysis/mode?agvId=1&value=202212
-//    // 範例路徑 /analysis/mode?agvId=2&value=202301
-//    // 範例路徑 /analysis/mode?agvId=3&value=recently
-//    @RequestMapping(value = "/analysis/mode", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String queryAnalysisByAGVAndYearAndMonth(@RequestParam("value") String value, @RequestParam("agvId") Integer agvId){
-//        // value=202212, 202301, recently
-//        int year, month;
-//        List<Analysis> list;
-//        switch (value) {
-//            case "recently" -> list = analysisService.queryAnalysisRecentlyByAGV(agvId);
-//            case "all" -> list = analysisService.queryAnalysisByAGV(agvId);
-//            default -> {
-//                year = Integer.parseInt(value.substring(0, 4));
-//                month = Integer.parseInt(value.substring(4, 6));
-//                list = analysisService.queryAnalysisByAGVAndYearAndMonth(agvId, year, month);
-//            }
-//        }
-//        return gson.toJson(list);
-//    }
-//    @RequestMapping(value = "/sendTask", produces = MediaType.TEXT_PLAIN_VALUE)
-//    public String sendTask(@RequestParam("time") String time, @RequestParam("agv") String agv,
-//                           @RequestParam("start") String start, @RequestParam("notification") String notification,
-//                           @RequestParam("mode") String mode){
-//        return taskService.insertTaskAndAddTask(time, agv, start, notification, mode) ? "OK" : "FAIL";
-//    }
-//
-//    @RequestMapping(value = "/cancelTask", produces = MediaType.TEXT_PLAIN_VALUE)
-//    public String cancelTask(@RequestParam("taskNumber") String taskNumber){
-//        taskNumber = "#" + taskNumber;
-//        System.out.println("taskNumber: "+taskNumber);
-//        return taskService.cancelTask(taskNumber) ? "OK" : "FAIL";
-//    }
+    @GetMapping(value = "/homepage/agvlist", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getAGVList(){
+        return gson.toJson(homePageService.queryAGVList());
+    }
+
+    @GetMapping(value = "/homepage/nowtasks", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getTasksJson() {
+        return gson.toJson(taskService.queryNowTaskLists());
+    }
+
+    @GetMapping(value = "/history/tasks", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getTodayTask(){
+        return gson.toJson(taskService.queryTaskLists());
+    }
+
+    @GetMapping(value = "/history/tasks/all", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getAllTask(){
+        return gson.toJson(taskService.queryAllTaskLists());
+    }
+
+    @GetMapping(value = "/homepage/iElevatorObstacleAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getIAlarm(){
+        return homePageService.getElevatorObstacleAlarm() ? "1" : "0";
+    }
+
+    @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getTodayNotifications(){
+        return gson.toJson(homePageService.queryTodayNotifications());
+    }
+
+    @GetMapping(value = "/history/notifications", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getNotifications(){
+        return gson.toJson(homePageService.queryNotifications());
+    }
+
+    @GetMapping(value = "/history/notifications/all", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getAllNotifications(){
+        return gson.toJson(homePageService.queryAllNotifications());
+    }
+
+    @GetMapping(value = "/homepage/messageData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getAgvStatusData(){
+        return gson.toJson(homePageService.queryMessageData());
+    }
+
+    @GetMapping(value = "/grid/status", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getStationsData(){
+        return gson.toJson(gridService.getGridsStatus());
+    }
+
+    @GetMapping(value = "/homepage/modes", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getModes(){
+        return gson.toJson(homePageService.queryModes());
+    }
+    @GetMapping(value = "/homepage/agv", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getAGVJson() {
+        return new Gson().toJson(homePageService.getAgv());
+    }
+
+    @GetMapping(value = "/analysis/yyyymm", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getAnalysisYearsAndMonths(){
+        return gson.toJson(analysisService.getAnalysisYearsAndMonths());
+    }
+
+    // 範例路徑 /analysis/mode?agvId=1&value=202212
+    // 範例路徑 /analysis/mode?agvId=2&value=202301
+    // 範例路徑 /analysis/mode?agvId=3&value=recently
+    @RequestMapping(value = "/analysis/mode", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String queryAnalysisByAGVAndYearAndMonth(@RequestParam("value") String value, @RequestParam("agvId") Integer agvId){
+        // value=202212, 202301, recently
+        int year, month;
+        List<Analysis> list;
+        switch (value) {
+            case "recently" -> list = analysisService.queryAnalysisRecentlyByAGV(agvId);
+            case "all" -> list = analysisService.queryAnalysisByAGV(agvId);
+            default -> {
+                year = Integer.parseInt(value.substring(0, 4));
+                month = Integer.parseInt(value.substring(4, 6));
+                list = analysisService.queryAnalysisByAGVAndYearAndMonth(agvId, year, month);
+            }
+        }
+        return gson.toJson(list);
+    }
+
+    @RequestMapping(value = "/cancelTask", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String cancelTask(@RequestParam("taskNumber") String taskNumber){
+        taskNumber = "#" + taskNumber;
+        System.out.println("taskNumber: "+taskNumber);
+        return taskService.cancelTask(taskNumber) ? "OK" : "FAIL";
+    }
 
     @PostMapping(value = "/sendtasklist")
     public ResponseEntity<String> handleTaskList(@RequestBody TaskListRequest jsonData){

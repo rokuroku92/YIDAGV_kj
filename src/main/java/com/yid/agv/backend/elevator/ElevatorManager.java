@@ -52,7 +52,7 @@ public class ElevatorManager {
         String[] statusData = crawlStatus().orElse(new String[0]);
         int[] callerStatus = new int[6];
         Arrays.fill(callerStatus, 0);
-
+        if (statusData.length == 0) return;
         String[] elevatorData = statusData[0].split(",");
         // 假設開門
         iOpenDoor = elevatorData[1].equals("1");

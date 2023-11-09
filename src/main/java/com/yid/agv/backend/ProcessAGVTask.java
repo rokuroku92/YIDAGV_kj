@@ -200,10 +200,25 @@ public class ProcessAGVTask {
             analysisDao.updateTask(analysisDao.queryAnalysisByAnalysisId(analysisId).getTask() + 1, analysisId);
             String taskStartStation = gridManager.getGridNameByStationId(task.getStartStationId());
             String taskTerminalStation = gridManager.getGridNameByStationId(task.getTerminalStationId());
-            if (!taskStartStation.startsWith("E-") && !taskTerminalStation.startsWith("E-")){
-                gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // TODO: Booked to Occupied
-            } else {
-                gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // TODO: Booked to Free
+            switch (task.getAgvId()){
+                case 1 -> {
+                    if (taskStartStation.startsWith("E-")){  // 3F->1F
+                        gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
+                    } else if (taskTerminalStation.startsWith("E-")){  // 1F->3F
+                        gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
+                    }
+                }
+                case 2 -> {
+                    gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
+                    gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
+                }
+                case 3 -> {
+                    if (taskTerminalStation.startsWith("E-")){  // 3F->1F
+                        gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
+                    } else if (!taskStartStation.startsWith("E-")){
+                        gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
+                    }
+                }
             }
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
