@@ -1,6 +1,8 @@
 package com.yid.agv.controller;
 
 import com.google.gson.Gson;
+import com.yid.agv.backend.station.Grid;
+import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.dto.TaskListRequest;
 import com.yid.agv.model.AGVId;
 import com.yid.agv.model.Analysis;
@@ -33,6 +35,9 @@ public class ApiController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private GridManager gridManager;
 
     @GetMapping(value = "/homepage/agvlist", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public String getAGVList(){
@@ -126,8 +131,16 @@ public class ApiController {
     }
 
     @PostMapping(value = "/sendtasklist")
-    public ResponseEntity<String> handleTaskList(@RequestBody TaskListRequest jsonData){
+    public String handleTaskList(@RequestBody TaskListRequest jsonData){
         System.out.println(jsonData);
-        return ResponseEntity.ok(taskService.addTaskList(jsonData));
+        String area = "3-" + jsonData.getTerminal();
+        List<Grid> availableGrids = gridManager.getAvailableGrids(area);
+
+        if(availableGrids.size() <= jsonData.getTasks().size()){
+            return "終點區域格位已滿";
+        }
+//        return ResponseEntity.ok(taskService.addTaskList(jsonData));
+//        return ResponseEntity.ok("YES");
+        return "YES";
     }
 }
