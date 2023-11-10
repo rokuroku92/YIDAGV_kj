@@ -6,6 +6,7 @@ import lombok.Data;
 public class AGVId {
     private int id;
     private String name;
+    private String img;
     private String memo;
 
 }

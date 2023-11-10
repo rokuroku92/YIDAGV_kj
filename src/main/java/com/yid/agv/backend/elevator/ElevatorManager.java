@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Queue;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class ElevatorManager {
+    @Value("${http.timeout}")
+    private int HTTP_TIMEOUT;
     @Value("${agvControl.url}")
     private String agvUrl;
     @Value("${elevator.pre_person_open_door_duration}")
@@ -50,9 +53,9 @@ public class ElevatorManager {
     @Scheduled(fixedRate = 1000)
     public void elevatorProcess() {
         String[] statusData = crawlStatus().orElse(new String[0]);
+        if (statusData.length == 0) return;
         int[] callerStatus = new int[6];
         Arrays.fill(callerStatus, 0);
-        if (statusData.length == 0) return;
         String[] elevatorData = statusData[0].split(",");
         // 假設開門
         iOpenDoor = elevatorData[1].equals("1");
@@ -193,10 +196,12 @@ public class ElevatorManager {
     }
 
     public Optional<String[]> crawlStatus() {
+        Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(agvUrl + "/callers"))  // TODO: fix
                 .GET()
+                .timeout(timeout)
                 .build();
 
         try {
@@ -214,9 +219,11 @@ public class ElevatorManager {
 
     public boolean controlElevatorDoor(int floor, boolean iOpen){
         String cmd = iOpen ? "J0130" : "J0132";
+        Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(agvUrl + "/cmd=" + floor + "&Q" + cmd + "X"))  // TODO: fix
                 .GET()
+                .timeout(timeout)
                 .build();
         try {
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
@@ -232,10 +239,12 @@ public class ElevatorManager {
         if(lastCallerStatus[id-1] != value) {
             System.out.println("Id: " + id + "  Value: " + value);
             lastCallerStatus[id-1] = value;
+            Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
             HttpRequest request = HttpRequest.newBuilder()
 //                .uri(URI.create("http://192.168.0.100:20100/caller=" + id + "&" + value + "&output"))
                     .uri(URI.create(agvUrl + "/caller=" + id + "&" + value + "&output"))
                     .GET()
+                    .timeout(timeout)
                     .build();
             try {
                 HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());

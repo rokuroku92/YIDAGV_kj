@@ -95,7 +95,56 @@ public class ApiController {
     }
     @GetMapping(value = "/homepage/agv", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getAGVJson() {
-        return new Gson().toJson(homePageService.getAgv());
+        return """
+                [
+                  {
+                    "id": 1,
+                    "status": "ONLINE",
+                    "battery": 90,
+                    "signal": 100,
+                    "taskStatus": "PRE_TERMINAL_STATION",
+                    "iLowBattery": false,
+                    "lowBatteryCount": 0,
+                    "reDispatchCount": 0,
+                    "tagError": false,
+                    "fixAgvTagErrorCompleted": false,
+                    "tagErrorDispatchCompleted": false,
+                    "lastTaskBuffer": false,
+                    "obstacleCount": 0
+                  },
+                  {
+                    "id": 2,
+                    "status": "OBSTACLE",
+                    "battery": 60,
+                    "signal": 30,
+                    "taskStatus": "PRE_START_STATION",
+                    "iLowBattery": false,
+                    "lowBatteryCount": 0,
+                    "reDispatchCount": 0,
+                    "tagError": false,
+                    "fixAgvTagErrorCompleted": false,
+                    "tagErrorDispatchCompleted": false,
+                    "lastTaskBuffer": false,
+                    "obstacleCount": 0
+                  },
+                  {
+                    "id": 3,
+                    "status": "ONLINE",
+                    "battery": 40,
+                    "signal": 60,
+                    "taskStatus": "NO_TASK",
+                    "iLowBattery": false,
+                    "lowBatteryCount": 0,
+                    "reDispatchCount": 0,
+                    "tagError": false,
+                    "fixAgvTagErrorCompleted": false,
+                    "tagErrorDispatchCompleted": false,
+                    "lastTaskBuffer": false,
+                    "obstacleCount": 0
+                  }
+                ]
+                """;
+//        return new Gson().toJson(homePageService.getAgv());
     }
 
     @GetMapping(value = "/analysis/yyyymm", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -133,14 +182,18 @@ public class ApiController {
     @PostMapping(value = "/sendtasklist")
     public String handleTaskList(@RequestBody TaskListRequest jsonData){
         System.out.println(jsonData);
-        String area = "3-" + jsonData.getTerminal();
+        String area = null;
+        switch (jsonData.getMode()) {
+            case 1 -> area = "3-" + jsonData.getTerminal();
+            case 2 -> area = "2-" + jsonData.getTerminal();
+            case 3 -> area = "1-" + jsonData.getTerminal();
+        }
         List<Grid> availableGrids = gridManager.getAvailableGrids(area);
-
-        if(availableGrids.size() <= jsonData.getTasks().size()){
+        System.out.println(availableGrids.size());
+        if(availableGrids.size() < jsonData.getTasks().size()){
             return "終點區域格位已滿";
         }
-//        return ResponseEntity.ok(taskService.addTaskList(jsonData));
-//        return ResponseEntity.ok("YES");
         return "YES";
+//        return taskService.addTaskList(jsonData);
     }
 }

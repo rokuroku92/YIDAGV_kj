@@ -149,8 +149,7 @@ public class TaskService {
                 return "終點站輸入錯誤";
             }
             case 3 -> {
-                if ("A".equals(taskListRequest.getTerminal())
-                ) {
+                if ("R".equals(taskListRequest.getTerminal())) {
                     String area = "1-" + taskListRequest.getTerminal();
                     List<Grid> availableGrids = gridManager.getAvailableGrids(area);
 

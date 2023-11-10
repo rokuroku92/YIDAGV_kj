@@ -26,11 +26,12 @@ public class GridManager {
         System.out.println("Initialize gridMap: " + gridMap);
     }
 
-//    @Scheduled(fixedRate = 10000)
-//    public void synchronizeDB() {
-//        gridListDao.queryAllGrids().forEach(grid -> gridMap.put(grid.getStation(), new Grid(grid)));
-//        // TODO: check over time
-//    }
+    @Scheduled(fixedRate = 5000)
+    public void synchronizeDB() {
+        gridListDao.queryAllGrids().forEach(grid -> gridMap.put(grid.getStation(), new Grid(grid)));
+//        gridMap.forEach((index, grid) -> System.out.println(index + grid.getStatus()));
+        // TODO: check over time
+    }
 
 
     public int getGirdStationId(String stationName){

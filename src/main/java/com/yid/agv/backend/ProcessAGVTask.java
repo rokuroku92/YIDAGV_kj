@@ -84,6 +84,7 @@ public class ProcessAGVTask {
                 if(dispatchTaskToAGV(agv)){
                     Objects.requireNonNull(goTask).setStatus(1);
                     agv.setTaskStatus(AGV.TaskStatus.PRE_START_STATION);
+                    taskDetailDao.updateStatusByTaskNumberAndSequence(goTask.getTaskNumber(), goTask.getSequence(), 1);
                 } else {
                     failedTask(agv);
                     // TODO: 刪除任務，可以直接將agv抱著的task -> null

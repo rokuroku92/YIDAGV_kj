@@ -18,6 +18,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,8 @@ public class AGVInstantStatus {
 
     @Autowired
     private TestFakeData testFakeData;
+    @Value("${http.timeout}")
+    private int HTTP_TIMEOUT;
     @Value("${agvControl.url}")
     private String agvUrl;
     @Value("${agv.low_battery}")
@@ -66,7 +69,20 @@ public class AGVInstantStatus {
     public void updateAgvStatuses() {
         // 抓取AGV狀態，並更新到agvStatuses
         String[] agvStatusData = crawlAGVStatus().orElse(new String[0]);
-        for (int i = 0; i < agvManager.getAgvLength() && agvStatusData.length != 0; i++) {
+        if(agvStatusData.length == 0) {
+            for (int i = 0; i < agvManager.getAgvLength(); i++) {
+                AGV agv = agvManager.getAgv(i+1);
+                NotificationDao.Title agvTitle = switch (i) {
+                    case 0 -> NotificationDao.Title.AMR_1;
+                    case 1 -> NotificationDao.Title.AMR_2;
+                    case 2 -> NotificationDao.Title.AMR_3;
+                    default -> throw new IllegalStateException("Unexpected agvManager.getAgvLength() value: " + i);
+                };
+                updateAGVOfflineStatus(agv, agvTitle, i);
+            }
+            return;
+        }
+        for (int i = 0; i < agvManager.getAgvLength(); i++) {
             AGV agv = agvManager.getAgv(i+1);
             String[] data = agvStatusData[i].split(",");  // 分隔 AGV 系統資料
             NotificationDao.Title agvTitle = switch (i) {
@@ -99,7 +115,7 @@ public class AGVInstantStatus {
                 if (terminalStation != null && terminalStation != 0 && agv.getPlace().equals(Integer.toString(stationIdTagMap.get(terminalStation)))){
 //                    taskQueue.setBookedStation(terminalStation,0);
                     // TODO: 取消Booked
-                    agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
+                    agv.setTaskStatus(AGV.TaskStatus.COMPLETED);
                 }
             }
         }
@@ -387,10 +403,12 @@ public class AGVInstantStatus {
 
     private boolean iCon = true;
     public Optional<String[]> crawlAGVStatus() {
+        Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(agvUrl + "/cars"))
                 .GET()
+                .timeout(timeout)
                 .build();
 
         try {
@@ -403,10 +421,10 @@ public class AGVInstantStatus {
             return Optional.of(data);
         } catch (IOException | InterruptedException e) {
 //            e.printStackTrace();
-            System.out.println("AGV 控制系統未連線");
             CountUtilizationRate.isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
             CountUtilizationRate.isWorking = new boolean[agvIdDao.queryAGVList().size()];
             if(iCon){
+                System.out.println("AGV 控制系統未連線");
                 notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.OFFLINE);
                 iCon=false;
             }
@@ -416,9 +434,11 @@ public class AGVInstantStatus {
     }
 
     private void fixAgvTagError(AGV agv) {
+        Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(agvUrl + "/cmd=" + agv.getId() + "&QJ0130X"))
                 .GET()
+                .timeout(timeout)
                 .build();
         try {
             HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
