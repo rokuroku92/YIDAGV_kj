@@ -6,7 +6,6 @@ import lombok.Data;
 public class AGVQTask {
     private String taskNumber;
     private int agvId;
-    private int sequence;
     private Integer startStationId;
     private Integer terminalStationId;
     private int modeId;

@@ -2,7 +2,6 @@ package com.yid.agv.service;
 
 import com.yid.agv.backend.agv.AGV;
 import com.yid.agv.backend.agv.AGVManager;
-import com.yid.agv.backend.elevator.ElevatorManager;
 import com.yid.agv.model.*;
 import com.yid.agv.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +17,12 @@ public class HomePageService {
     
     @Autowired
     private NotificationDao notificationDao;
-
-    @Autowired
-    private MessageDataDao messageDataDao;
     
     @Autowired
     private ModeDao modeDao;
 
     @Autowired
     private AGVManager agvManager;
-
-    @Autowired
-    private ElevatorManager elevatorManager;
 
     private int iAlarm;
 
@@ -41,15 +34,16 @@ public class HomePageService {
         this.iAlarm = iAlarm;
     }
 
-    public boolean getElevatorObstacleAlarm(){
-        return elevatorManager.getIAlarmObstacle();
-    }
     public AGV[] getAgv(){
         return agvManager.getAgvCopyArray();
     }
 
     public List<AGVId> queryAGVList(){
         return agvIdDao.queryAGVList();
+    }
+
+    public List<Notification> queryNotificationsL(){
+        return notificationDao.queryNotificationsL();
     }
 
     public List<Notification> queryTodayNotifications(){
@@ -68,9 +62,6 @@ public class HomePageService {
         return notificationDao.queryNotifications();
     }
 
-    public List<MessageData> queryMessageData(){
-        return messageDataDao.queryMessageData();
-    }
 
     public List<Mode> queryModes(){
         return modeDao.queryModes();

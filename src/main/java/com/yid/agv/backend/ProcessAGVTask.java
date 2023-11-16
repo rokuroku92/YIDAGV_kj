@@ -6,12 +6,8 @@ import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.backend.agvtask.AGVTaskManager;
 import com.yid.agv.backend.agvtask.AGVQTask;
-import com.yid.agv.backend.tasklist.TaskListManager;
 import com.yid.agv.model.Station;
-import com.yid.agv.repository.AnalysisDao;
-import com.yid.agv.repository.NotificationDao;
-import com.yid.agv.repository.StationDao;
-import com.yid.agv.repository.TaskDetailDao;
+import com.yid.agv.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +34,7 @@ public class ProcessAGVTask {
     @Autowired
     private AnalysisDao analysisDao;
     @Autowired
-    private TaskDetailDao taskDetailDao;
+    private TaskListDao taskListDao;
     @Autowired
     private NotificationDao notificationDao;
     @Autowired
@@ -47,8 +43,6 @@ public class ProcessAGVTask {
     private AGVManager agvManager;
     @Autowired
     private GridManager gridManager;
-    @Autowired
-    private TaskListManager taskListManager;
 
 
     private static Map<Integer, Integer> stationIdTagMap;
@@ -84,7 +78,7 @@ public class ProcessAGVTask {
                 if(dispatchTaskToAGV(agv)){
                     Objects.requireNonNull(goTask).setStatus(1);
                     agv.setTaskStatus(AGV.TaskStatus.PRE_START_STATION);
-                    taskDetailDao.updateStatusByTaskNumberAndSequence(goTask.getTaskNumber(), goTask.getSequence(), 1);
+                    taskListDao.updateTaskListStatus(goTask.getTaskNumber(), 1);
                 } else {
                     failedTask(agv);
                     // TODO: 刪除任務，可以直接將agv抱著的task -> null
@@ -190,7 +184,7 @@ public class ProcessAGVTask {
     public void failedTask(AGV agv){
         AGVQTask task = agv.getTask();
         System.err.println("Failed task:" + task);
-        taskDetailDao.updateStatusByTaskNumberAndSequence(task.getTaskNumber(), task.getSequence(), -1);
+        taskListDao.cancelTaskList(task.getTaskNumber());
         agv.setTask(null);
     }
 
@@ -223,8 +217,7 @@ public class ProcessAGVTask {
             }
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
-        taskDetailDao.updateStatusByTaskNumberAndSequence(task.getTaskNumber(), task.getSequence(), 100);
-        taskListManager.setTaskListProgressBySequence(task.getTaskNumber(), task.getSequence());
+        taskListDao.updateTaskListStatus(task.getTaskNumber(), 100);
         agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
         agv.setTask(null);
     }
@@ -252,25 +245,17 @@ public class ProcessAGVTask {
         toStandbyTask.setAgvId(agv.getId());
         toStandbyTask.setModeId(1);
         toStandbyTask.setStatus(0);
-        toStandbyTask.setSequence(1);
         toStandbyTask.setTaskNumber("#SB" + agv.getId() + formattedDateTime);
         toStandbyTask.setStartStationId(standbyStation.get());
         toStandbyTask.setTerminalStationId(standbyStation.get());
 
         agv.setTask(toStandbyTask);
 
-        TaskDetailDao.Title title = switch (agv.getId()){
-            case 1 -> TaskDetailDao.Title.AMR_1;
-            case 2 -> TaskDetailDao.Title.AMR_2;
-            case 3 -> TaskDetailDao.Title.AMR_3;
-            default -> throw new IllegalStateException("Unexpected value: " + agv.getId());
-        };
-
         System.out.println("toStandbyTask: " + toStandbyTask);
 
-        taskDetailDao.insertTaskDetail(toStandbyTask.getTaskNumber(), title, toStandbyTask.getSequence(),
-                Integer.toString(toStandbyTask.getStartStationId()), Integer.toString(toStandbyTask.getTerminalStationId()),
-                TaskDetailDao.Mode.DEFAULT);
+        taskListDao.insertTaskList(toStandbyTask.getTaskNumber(), formattedDateTime, toStandbyTask.getAgvId(),
+                toStandbyTask.getStartStationId(), toStandbyTask.getTerminalStationId(),
+                TaskListDao.Mode.DEFAULT);
         dispatchTaskToAGV(agv);
     }
     public boolean getIsRetrying(){

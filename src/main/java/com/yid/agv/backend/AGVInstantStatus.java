@@ -124,21 +124,21 @@ public class AGVInstantStatus {
 
     private void updateAGVBasicStatus(AGV agv, String[] data, NotificationDao.Title agvTitle, int i){
         if(data[0].trim().equals("-1")){  // 車號為-1時，判定為AGV離線
-            if(agv.getStatus() != AGV.Status.OFFLINE){
-                updateAGVOfflineStatus(agv, agvTitle, i);
-            }
+            updateAGVOfflineStatus(agv, agvTitle, i);
         } else {
             updateAGVOnlineStatus(agv, data, agvTitle, i);
         }
     }
 
     private void updateAGVOfflineStatus(AGV agv, NotificationDao.Title agvTitle, int i){
-        agv.setStatus(AGV.Status.OFFLINE);
-        agv.setSignal(0);
-        agv.setBattery(0);
-        notificationDao.insertMessage(agvTitle, NotificationDao.Status.OFFLINE);
-        CountUtilizationRate.isPoweredOn[i] = false;
-        CountUtilizationRate.isWorking[i] = false;
+        if(agv.getStatus() != AGV.Status.OFFLINE){
+            notificationDao.insertMessage(agvTitle, NotificationDao.Status.OFFLINE);
+            agv.setStatus(AGV.Status.OFFLINE);
+            agv.setSignal(0);
+            agv.setBattery(0);
+            CountUtilizationRate.isPoweredOn[i] = false;
+            CountUtilizationRate.isWorking[i] = false;
+        }
     }
 
 
@@ -252,21 +252,6 @@ public class AGVInstantStatus {
             processTasks.completedTask(agv);
             agv.setReDispatchCount(0);
         }
-
-//        if (iTask) {
-//            // 任務完成(task完成)
-//            agv.setTask(null);
-//            agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
-//            if (!iStandbyTask) {
-//                ProcessTasks.completedTask(agv);
-//                iTask = false;
-//            } else {
-//                iTask = false;
-//                iStandbyTask = false;
-//                ProcessTasks.completedGoStandbyTask(taskDao);
-//            }
-//            reDispatch = 0;
-//        }
     }
 
     private void updateAgvStatus(AGV agv, String data, NotificationDao.Title agvTitle){

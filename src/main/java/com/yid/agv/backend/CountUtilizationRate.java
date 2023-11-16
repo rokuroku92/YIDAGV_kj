@@ -24,7 +24,7 @@ public class CountUtilizationRate {
     public static boolean[] isPoweredOn; // AGV是否開機(由InstantStatus控制)
     public static boolean[] isWorking; // AGV是否工作(由InstantStatus控制)
 
-//    @Scheduled(fixedRate = 60000) // 每分鐘執行一次
+    @Scheduled(fixedRate = 60000) // 每分鐘執行一次
     public void checkAgvStatus() {
         if (isPoweredOn == null) isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
         if (isWorking == null) isWorking = new boolean[agvIdDao.queryAGVList().size()];

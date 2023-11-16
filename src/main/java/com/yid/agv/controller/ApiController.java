@@ -3,7 +3,7 @@ package com.yid.agv.controller;
 import com.google.gson.Gson;
 import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
-import com.yid.agv.dto.TaskListRequest;
+import com.yid.agv.dto.TaskRequest;
 import com.yid.agv.model.AGVId;
 import com.yid.agv.model.Analysis;
 import com.yid.agv.service.AnalysisService;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+@CrossOrigin(origins = "*")
 public class ApiController {
     private final Gson gson = new Gson();
 
@@ -44,29 +44,24 @@ public class ApiController {
         return gson.toJson(homePageService.queryAGVList());
     }
 
-    @GetMapping(value = "/homepage/nowtasks", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    @GetMapping(value = "/task/now", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public String getTasksJson() {
-        return gson.toJson(taskService.queryNowTaskLists());
+        return gson.toJson(taskService.queryUnCompletedTasks());
     }
 
-    @GetMapping(value = "/history/tasks", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-    public String getTodayTask(){
+    @GetMapping(value = "/task/tasks", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getTasks(){
         return gson.toJson(taskService.queryTaskLists());
     }
 
-    @GetMapping(value = "/history/tasks/all", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    @GetMapping(value = "/task/all", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public String getAllTask(){
         return gson.toJson(taskService.queryAllTaskLists());
     }
 
-    @GetMapping(value = "/homepage/iElevatorObstacleAlarm", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String getIAlarm(){
-        return homePageService.getElevatorObstacleAlarm() ? "1" : "0";
-    }
-
     @GetMapping(value = "/homepage/notifications", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-    public String getTodayNotifications(){
-        return gson.toJson(homePageService.queryTodayNotifications());
+    public String getNotificationsL(){
+        return gson.toJson(homePageService.queryNotificationsL());
     }
 
     @GetMapping(value = "/history/notifications", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
@@ -74,14 +69,14 @@ public class ApiController {
         return gson.toJson(homePageService.queryNotifications());
     }
 
+    @GetMapping(value = "/history/notifications/today", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
+    public String getTodayNotifications(){
+        return gson.toJson(homePageService.queryTodayNotifications());
+    }
+
     @GetMapping(value = "/history/notifications/all", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public String getAllNotifications(){
         return gson.toJson(homePageService.queryAllNotifications());
-    }
-
-    @GetMapping(value = "/homepage/messageData", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
-    public String getAgvStatusData(){
-        return gson.toJson(homePageService.queryMessageData());
     }
 
     @GetMapping(value = "/grid/status", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
@@ -103,36 +98,6 @@ public class ApiController {
                     "battery": 90,
                     "signal": 100,
                     "taskStatus": "PRE_TERMINAL_STATION",
-                    "iLowBattery": false,
-                    "lowBatteryCount": 0,
-                    "reDispatchCount": 0,
-                    "tagError": false,
-                    "fixAgvTagErrorCompleted": false,
-                    "tagErrorDispatchCompleted": false,
-                    "lastTaskBuffer": false,
-                    "obstacleCount": 0
-                  },
-                  {
-                    "id": 2,
-                    "status": "OBSTACLE",
-                    "battery": 60,
-                    "signal": 30,
-                    "taskStatus": "PRE_START_STATION",
-                    "iLowBattery": false,
-                    "lowBatteryCount": 0,
-                    "reDispatchCount": 0,
-                    "tagError": false,
-                    "fixAgvTagErrorCompleted": false,
-                    "tagErrorDispatchCompleted": false,
-                    "lastTaskBuffer": false,
-                    "obstacleCount": 0
-                  },
-                  {
-                    "id": 3,
-                    "status": "ONLINE",
-                    "battery": 40,
-                    "signal": 60,
-                    "taskStatus": "NO_TASK",
                     "iLowBattery": false,
                     "lowBatteryCount": 0,
                     "reDispatchCount": 0,
@@ -179,21 +144,8 @@ public class ApiController {
         return taskService.cancelTask(taskNumber) ? "OK" : "FAIL";
     }
 
-    @PostMapping(value = "/sendtasklist")
-    public String handleTaskList(@RequestBody TaskListRequest jsonData){
-        System.out.println(jsonData);
-        String area = null;
-        switch (jsonData.getMode()) {
-            case 1 -> area = "3-" + jsonData.getTerminal();
-            case 2 -> area = "2-" + jsonData.getTerminal();
-            case 3 -> area = "1-" + jsonData.getTerminal();
-        }
-        List<Grid> availableGrids = gridManager.getAvailableGrids(area);
-        System.out.println(availableGrids.size());
-        if(availableGrids.size() < jsonData.getTasks().size()){
-            return "終點區域格位已滿";
-        }
-        return "YES";
-//        return taskService.addTaskList(jsonData);
+    @PostMapping(value = "/sendtask")
+    public String handleTaskList(@RequestBody TaskRequest jsonData){
+        return taskService.addTask(jsonData);
     }
 }

@@ -1,5 +1,5 @@
 jdbc:
-  url: jdbc:mysql://localhost:3306/AGV_WTools?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
+  url: jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
   username: root
   password: 12345678
 
@@ -12,9 +12,6 @@ agv:
   low_battery: 70  # AGV電量低於多少算低電量
   low_battery_duration: 60  # AGV低電量持續多久時，派遣回待命點
   obstacle_duration: 30  # 前有障礙多久時要發出警告
-
-elevator:
-  pre_person_open_door_duration: 10  # 人員呼叫，電梯開門多久後沒按下人員佔用按鈕，歸還權限
 
 http:
   timeout: 2

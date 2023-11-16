@@ -34,7 +34,7 @@ public class GridManager {
     }
 
 
-    public int getGirdStationId(String stationName){
+    public Integer getGirdStationId(String stationName){
         return gridMap.get(stationName).getStationId();
     }
 
@@ -59,30 +59,7 @@ public class GridManager {
      * 如果達到了groupGrids的數量（即達到了群組的大小），並且count等於groupGrids，則將這些網格新增至availableGrids清單中，並重置count。
      * 最後，返回availableGrids列表，其中包含了滿足條件的可用網格。
      */
-    public List<Grid> getAvailableGrids(String areaName){  // 1-R, 2-A, 3-A, 3-B
-
-        String fullAreaName = areaName + "-";
-        int totalGrids = stationDao.getAreaGridsLength(areaName);
-        int groupGrids = areaName.startsWith("3-C") ? 3 : 2;
-
-        List<Grid> availableGrids = new ArrayList<>();
-        int count = 0;
-        for (int i = 1; i <= totalGrids; i++) {
-            if (getGridStatus(fullAreaName+i) == Grid.Status.FREE){
-                count++;
-            }
-            if (i % groupGrids == 0){
-                if (count == groupGrids){
-                    for (int j = groupGrids-1; j >= 0; j--) {
-                        availableGrids.add(gridMap.get(fullAreaName+(i-j)));
-                    }
-                }
-                count = 0;
-            }
-        }
-
-        return availableGrids;
-    }
+//    public List<Grid> getAvailableGrids(String areaName);
 
     public boolean setGridStatus(String gridName, Grid.Status status){
         boolean dbResult = gridListDao.updateStatus(getGirdStationId(gridName), status);
