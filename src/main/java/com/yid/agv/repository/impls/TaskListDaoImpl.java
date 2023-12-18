@@ -15,16 +15,18 @@ public class TaskListDaoImpl implements TaskListDao {
     private JdbcTemplate jdbcTemplate;
     @Override
     public List<TaskList> queryUncompletedTaskLists(){
-        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
+        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, ad.name AS agv, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
                 "sd.name AS start, sdd.id AS terminal_id, sd.name AS terminal, tl.status FROM task_list tl " +
+                "LEFT JOIN agv_data ad ON tl.agv_id = ad.id " +
                 "LEFT JOIN station_data sd ON tl.start_id = sd.id " +
                 "LEFT JOIN station_data sdd ON tl.terminal_id = sdd.id WHERE tl.status = 0 ORDER BY id";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(TaskList.class));
     }
     @Override
     public List<TaskList> queryTaskListsByDate(String date){
-        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
+        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, ad.name As agv, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
                 "sd.name AS start, sdd.id AS terminal_id, sd.name AS terminal, tl.status FROM task_list tl " +
+                "LEFT JOIN agv_data ad ON tl.agv_id = ad.id " +
                 "LEFT JOIN station_data sd ON tl.start_id = sd.id " +
                 "LEFT JOIN station_data sdd ON tl.terminal_id = sdd.id " +
                 "WHERE DATE_FORMAT(STR_TO_DATE(create_task_time, '%Y%m%d%H%i%s'), '%Y-%m-%d') = ? ORDER BY id DESC";
@@ -32,16 +34,18 @@ public class TaskListDaoImpl implements TaskListDao {
     }
     @Override
     public List<TaskList> queryTaskLists(){
-        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
+        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, ad.name AS agv, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
                 "sd.name AS start, sdd.id AS terminal_id, sd.name AS terminal, tl.status FROM task_list tl " +
+                "LEFT JOIN agv_data ad ON tl.agv_id = ad.id " +
                 "LEFT JOIN station_data sd ON tl.start_id = sd.id " +
                 "LEFT JOIN station_data sdd ON tl.terminal_id = sdd.id ORDER BY id DESC LIMIT 100";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(TaskList.class));
     }
     @Override
     public List<TaskList> queryAllTaskLists(){
-        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
+        String sql = "SELECT tl.id, tl.task_number, tl.create_task_time, ad.name AS agv, tl.agv_id, tl.mode_id, sd.id AS start_id, " +
                 "sd.name AS start, sdd.id AS terminal_id, sd.name AS terminal, tl.status FROM task_list tl " +
+                "LEFT JOIN agv_data ad ON tl.agv_id = ad.id " +
                 "LEFT JOIN station_data sd ON tl.start_id = sd.id " +
                 "LEFT JOIN station_data sdd ON tl.terminal_id = sdd.id ORDER BY id DESC";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(TaskList.class));
@@ -68,7 +72,7 @@ public class TaskListDaoImpl implements TaskListDao {
     }
     @Override
     public boolean cancelTaskList(String taskNumber){
-        String sql = "UPDATE `task_list` SET `status` -1 WHERE `task_number` = ?";
+        String sql = "UPDATE `task_list` SET `status` = -1 WHERE `task_number` = ?";
         // 使用 JdbcTemplate 的 update 方法執行 SQL 語句
         int rowsAffected = jdbcTemplate.update(sql, taskNumber);
         return (rowsAffected > 0);

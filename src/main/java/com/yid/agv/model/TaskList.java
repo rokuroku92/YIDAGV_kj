@@ -7,6 +7,7 @@ public class TaskList {
     private Long id;
     private String taskNumber;
     private String createTaskTime;
+    private String agv;
     private int agvId;
     private String start;
     private Integer startId;

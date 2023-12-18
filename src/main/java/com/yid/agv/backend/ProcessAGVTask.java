@@ -11,6 +11,7 @@ import com.yid.agv.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class ProcessAGVTask {
     }
 
 
-//    @Scheduled(fixedRate = 4000)
+    @Scheduled(fixedRate = 4000)
     public void dispatchTasks() {
         if(isRetrying)return;
 
@@ -99,7 +100,6 @@ public class ProcessAGVTask {
         List<Integer> standbyTags = stationDao.queryStandbyStations().stream()
                 .map(Station::getTag).toList();
 
-
         for (int standbyTag : standbyTags) {
             if (standbyTag == placeVal
                     || standbyTag+250 == placeVal
@@ -121,7 +121,7 @@ public class ProcessAGVTask {
                 if (task == null) return false;
                 String nowPlace = agv.getPlace();
                 String url;
-                if (task.getTaskNumber().startsWith("#SB") || agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION){
+                if (task.getTaskNumber().matches("#(SB|LB).*") || agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION){
                     url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                             "&" + stationIdTagMap.get(task.getTerminalStationId());
                 } else if (task.getTaskNumber().startsWith("#YE")|| task.getTaskNumber().startsWith("#RE") || task.getTaskNumber().startsWith("#NE")){
@@ -184,37 +184,17 @@ public class ProcessAGVTask {
     public void failedTask(AGV agv){
         AGVQTask task = agv.getTask();
         System.err.println("Failed task:" + task);
-        taskListDao.cancelTaskList(task.getTaskNumber());
+        AGVTaskManager.removeTaskByTaskNumber(task.getTaskNumber());
         agv.setTask(null);
     }
 
     public void completedTask(AGV agv){
         AGVQTask task = agv.getTask();
-        if(!task.getTaskNumber().startsWith("#SB")){
+        if(!task.getTaskNumber().matches("#(SB|LB).*")){
             int analysisId = analysisDao.getTodayAnalysisId().get(task.getAgvId() - 1).getAnalysisId();
             analysisDao.updateTask(analysisDao.queryAnalysisByAnalysisId(analysisId).getTask() + 1, analysisId);
-            String taskStartStation = gridManager.getGridNameByStationId(task.getStartStationId());
-            String taskTerminalStation = gridManager.getGridNameByStationId(task.getTerminalStationId());
-            switch (task.getAgvId()){
-                case 1 -> {
-                    if (taskStartStation.startsWith("E-")){  // 3F->1F
-                        gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
-                    } else if (taskTerminalStation.startsWith("E-")){  // 1F->3F
-                        gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
-                    }
-                }
-                case 2 -> {
-                    gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
-                    gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
-                }
-                case 3 -> {
-                    if (taskTerminalStation.startsWith("E-")){  // 3F->1F
-                        gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
-                    } else if (!taskStartStation.startsWith("E-")){
-                        gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
-                    }
-                }
-            }
+            gridManager.setGridStatus(task.getStartStationId(), Grid.Status.FREE);  // Booked to Free
+            gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
         taskListDao.updateTaskListStatus(task.getTaskNumber(), 100);
@@ -225,11 +205,11 @@ public class ProcessAGVTask {
     public void goStandbyTask(AGV agv){
 //        int place = Integer.parseInt(agv.getPlace());
         // 這個專案待命點不用選擇(低電量時)
-        String agvIdPrefix = String.valueOf(agv.getId());
+//        String agvIdPrefix = String.valueOf(agv.getId());
         List<Station> standbyStations = stationDao.queryStandbyStations();
 
         Optional<Integer> standbyStation = standbyStations.stream()
-                .filter(station -> station.getName().startsWith(agvIdPrefix))
+//                .filter(station -> station.getName().startsWith(agvIdPrefix))
                 .map(Station::getId)
                 .findFirst();
 
@@ -237,17 +217,23 @@ public class ProcessAGVTask {
             throw new RuntimeException();
         }
 
+        String standbyStationName = gridManager.getGridNameByStationId(standbyStation.get());
+
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String formattedDateTime = now.format(formatter);
+
+        String taskNumber = agv.isILowBattery() ? "#LB" + agv.getId() + formattedDateTime : "#SB" + agv.getId() + formattedDateTime;
 
         AGVQTask toStandbyTask = new AGVQTask();
         toStandbyTask.setAgvId(agv.getId());
         toStandbyTask.setModeId(1);
         toStandbyTask.setStatus(0);
-        toStandbyTask.setTaskNumber("#SB" + agv.getId() + formattedDateTime);
+        toStandbyTask.setTaskNumber(taskNumber);
         toStandbyTask.setStartStationId(standbyStation.get());
+        toStandbyTask.setStartStation(standbyStationName);
         toStandbyTask.setTerminalStationId(standbyStation.get());
+        toStandbyTask.setTerminalStation(standbyStationName);
 
         agv.setTask(toStandbyTask);
 

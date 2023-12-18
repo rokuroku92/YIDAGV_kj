@@ -1,18 +1,9 @@
-jdbc:
-  url: jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
-  username: root
-  password: 12345678
-
-agvControl:
-#  url: http://192.168.0.100:20100
-  url: http://10.11.33.232:20100
-#  url: http://localhost:20101
-
-agv:
-  low_battery: 70  # AGV電量低於多少算低電量
-  low_battery_duration: 60  # AGV低電量持續多久時，派遣回待命點
-  obstacle_duration: 30  # 前有障礙多久時要發出警告
-
-http:
-  timeout: 2
-  max_retry: 3
+jdbc.password: '12345678'
+agv.low_battery: 70
+agvControl.url: http://10.11.33.232:20100
+agv.obstacle_duration: 30
+http.timeout: 2
+jdbc.username: root
+jdbc.url: jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
+http.max_retry: 3
+agv.low_battery_duration: 60

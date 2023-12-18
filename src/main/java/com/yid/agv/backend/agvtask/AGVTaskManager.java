@@ -1,6 +1,7 @@
 package com.yid.agv.backend.agvtask;
 
 
+import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.model.TaskList;
 import com.yid.agv.repository.AGVIdDao;
@@ -46,7 +47,9 @@ public class AGVTaskManager {
                     AGVQTask newTask = new AGVQTask();
                     newTask.setTaskNumber(taskList.getTaskNumber());
                     newTask.setAgvId(agvId);
+                    newTask.setStartStation(taskList.getStart());
                     newTask.setStartStationId(taskList.getStartId());
+                    newTask.setTerminalStation(taskList.getTerminal());
                     newTask.setTerminalStationId(taskList.getTerminalId());
                     newTask.setModeId(taskList.getModeId());
                     newTask.setStatus(0);
@@ -56,13 +59,13 @@ public class AGVTaskManager {
         });
     }
 
-    public Queue<AGVQTask> getTaskQueue(int agvId){
-        return taskQueueMap.get(agvId);
-    }
+//    public Queue<AGVQTask> getTaskQueue(int agvId){
+//        return taskQueueMap.get(agvId);
+//    }
 
-    public void forceClearTaskQueueByAGVId(int agvId){
-        taskQueueMap.put(agvId, new ConcurrentLinkedDeque<>());
-    }
+//    public void forceClearTaskQueueByAGVId(int agvId){
+//        taskQueueMap.put(agvId, new ConcurrentLinkedDeque<>());
+//    }
 
     public AGVQTask getNewTaskByAGVId(int agvId){
         return taskQueueMap.get(agvId).poll();
@@ -82,6 +85,8 @@ public class AGVTaskManager {
             while (taskIterator.hasNext()) {
                 AGVQTask task = taskIterator.next();
                 if (task.getTaskNumber().equals(taskNumber) && task.getStatus() == 0) {
+                    gridManager.setGridStatus(task.getStartStationId(), Grid.Status.OCCUPIED);
+                    gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.FREE);
                     taskIterator.remove();
                     taskListDao.cancelTaskList(taskNumber);
                     return true;

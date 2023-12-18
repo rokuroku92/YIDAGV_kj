@@ -3,19 +3,16 @@ package com.yid.agv.controller;
 import com.google.gson.Gson;
 import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
+import com.yid.agv.dto.SettingRequest;
 import com.yid.agv.dto.TaskRequest;
-import com.yid.agv.model.AGVId;
 import com.yid.agv.model.Analysis;
-import com.yid.agv.service.AnalysisService;
+import com.yid.agv.service.*;
 
-import com.yid.agv.service.GridService;
-import com.yid.agv.service.HomePageService;
-import com.yid.agv.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -35,6 +32,9 @@ public class ApiController {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private SettingService settingService;
 
     @Autowired
     private GridManager gridManager;
@@ -83,6 +83,15 @@ public class ApiController {
     public String getStationsData(){
         return gson.toJson(gridService.getGridsStatus());
     }
+    @RequestMapping(value = "/grid/setStatus", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
+    public String setGridStatus(@RequestParam("stationName") String stationName, @RequestParam("mode") String mode){
+        Grid.Status status = null;
+        switch (mode){
+            case "clear" -> status = Grid.Status.FREE;
+            case "occupied" -> status = Grid.Status.OCCUPIED;
+        }
+        return status == null ? "模式錯誤！！" : gridService.setGridStatus(stationName, status);
+    }
 
     @GetMapping(value = "/homepage/modes", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public String getModes(){
@@ -90,26 +99,34 @@ public class ApiController {
     }
     @GetMapping(value = "/homepage/agv", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getAGVJson() {
-        return """
-                [
-                  {
-                    "id": 1,
-                    "status": "ONLINE",
-                    "battery": 90,
-                    "signal": 100,
-                    "taskStatus": "PRE_TERMINAL_STATION",
-                    "iLowBattery": false,
-                    "lowBatteryCount": 0,
-                    "reDispatchCount": 0,
-                    "tagError": false,
-                    "fixAgvTagErrorCompleted": false,
-                    "tagErrorDispatchCompleted": false,
-                    "lastTaskBuffer": false,
-                    "obstacleCount": 0
-                  }
-                ]
-                """;
-//        return new Gson().toJson(homePageService.getAgv());
+//        AGV[] result = new AGV[1];
+//        AGV testAgv = new AGV(1);
+//        testAgv.setStatus(AGV.Status.ONLINE);
+//        testAgv.setBattery(90);
+//        testAgv.setSignal(88);
+//        testAgv.setTaskStatus(AGV.TaskStatus.PRE_TERMINAL_STATION);
+//        testAgv.setILowBattery(false);
+//        testAgv.setLowBatteryCount(0);
+//        testAgv.setReDispatchCount(0);
+//        testAgv.setTagError(false);
+//        testAgv.setFixAgvTagErrorCompleted(false);
+//        testAgv.setTagErrorDispatchCompleted(false);
+//        testAgv.setLastTaskBuffer(false);
+//        testAgv.setObstacleCount(0);
+//        AGVQTask task = new AGVQTask();
+//        task.setAgvId(1);
+//        task.setModeId(1);
+//        task.setStatus(0);
+//        task.setTaskNumber("#TT20231124103455");
+//        task.setStartStationId(1);
+//        task.setStartStation("A-1");
+//        task.setTerminalStationId(8);
+//        task.setTerminalStation("B-1");
+//        testAgv.setTask(task);
+//
+//        result[0] = testAgv;
+//        return gson.toJson(result);
+        return new Gson().toJson(homePageService.getAgv());
     }
 
     @GetMapping(value = "/analysis/yyyymm", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -140,12 +157,22 @@ public class ApiController {
     @RequestMapping(value = "/cancelTask", produces = MediaType.TEXT_PLAIN_VALUE)
     public String cancelTask(@RequestParam("taskNumber") String taskNumber){
         taskNumber = "#" + taskNumber;
-        System.out.println("taskNumber: "+taskNumber);
+//        System.out.println("taskNumber: "+taskNumber);
         return taskService.cancelTask(taskNumber) ? "OK" : "FAIL";
     }
 
     @PostMapping(value = "/sendtask")
     public String handleTaskList(@RequestBody TaskRequest jsonData){
         return taskService.addTask(jsonData);
+//        System.out.println(jsonData);
+//        return "OK";
+    }
+    @GetMapping(value = "/getConfig")
+    public String getConfig() throws IOException {
+        return gson.toJson(settingService.getConfig());
+    }
+    @PostMapping(value = "/setConfig")
+    public String setConfig(@RequestBody SettingRequest settingRequest){
+        return settingService.updateConfig(settingRequest);
     }
 }

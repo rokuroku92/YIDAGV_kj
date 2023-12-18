@@ -49,6 +49,7 @@ public class TaskService {
     }
 
     public boolean cancelTask(String taskNumber){
+
         return taskQueue.removeTaskByTaskNumber(taskNumber);
     }
 
@@ -65,6 +66,22 @@ public class TaskService {
         } else if (terminalStationId == null) {
             return "終點格位輸入錯誤";
         }
+
+        if(gridManager.getGridStatus(taskRequest.getStartGrid()) == Grid.Status.FREE){
+            return "起始格位無車輛";
+        } else if(gridManager.getGridStatus(taskRequest.getStartGrid()) == Grid.Status.BOOKED){
+            return "起始格位已被排程";
+        }
+
+        if(gridManager.getGridStatus(taskRequest.getTerminalGrid()) == Grid.Status.OCCUPIED){
+            return "終點格位上有車輛";
+        } else if(gridManager.getGridStatus(taskRequest.getTerminalGrid()) == Grid.Status.BOOKED){
+            return "終點格位已被排程";
+        }
+        if(taskListDao.queryUncompletedTaskLists().size()>30){
+            return "任務已達上限！！";
+        }
+
         LocalDateTime currentDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String formattedDateTime = currentDateTime.format(formatter);

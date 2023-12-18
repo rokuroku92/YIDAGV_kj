@@ -2,6 +2,7 @@ package com.yid.agv.backend;
 
 import com.yid.agv.backend.agv.AGVManager;
 import com.yid.agv.backend.agv.AGV;
+import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.backend.agvtask.AGVTaskManager;
 import com.yid.agv.model.Station;
@@ -52,7 +53,7 @@ public class AGVInstantStatus {
     @Autowired
     private ProcessAGVTask processTasks;
     @Autowired
-    private GridManager stationManager;
+    private GridManager gridManager;
     @Autowired
     private HomePageService homePageService;
 
@@ -72,12 +73,11 @@ public class AGVInstantStatus {
         if(agvStatusData.length == 0) {
             for (int i = 0; i < agvManager.getAgvLength(); i++) {
                 AGV agv = agvManager.getAgv(i+1);
-                NotificationDao.Title agvTitle = switch (i) {
-                    case 0 -> NotificationDao.Title.AMR_1;
-                    case 1 -> NotificationDao.Title.AMR_2;
-                    case 2 -> NotificationDao.Title.AMR_3;
-                    default -> throw new IllegalStateException("Unexpected agvManager.getAgvLength() value: " + i);
-                };
+                NotificationDao.Title agvTitle = NotificationDao.Title.AGV_1;
+//                NotificationDao.Title agvTitle = switch (i) {
+//                    case 0 -> NotificationDao.Title.AGV_1;
+//                    default -> throw new IllegalStateException("Unexpected agvManager.getAgvLength() value: " + i);
+//                };
                 updateAGVOfflineStatus(agv, agvTitle, i);
             }
             return;
@@ -85,12 +85,7 @@ public class AGVInstantStatus {
         for (int i = 0; i < agvManager.getAgvLength(); i++) {
             AGV agv = agvManager.getAgv(i+1);
             String[] data = agvStatusData[i].split(",");  // 分隔 AGV 系統資料
-            NotificationDao.Title agvTitle = switch (i) {
-                case 0 -> NotificationDao.Title.AMR_1;
-                case 1 -> NotificationDao.Title.AMR_2;
-                case 2 -> NotificationDao.Title.AMR_3;
-                default -> throw new IllegalStateException("Unexpected agvManager.getAgvLength() value: " + i);
-            };
+            NotificationDao.Title agvTitle = NotificationDao.Title.AGV_1;  // 只有一台
 
             updateAGVBasicStatus(agv, data, agvTitle, i);
             updateTaskStatus(agv);
@@ -105,16 +100,14 @@ public class AGVInstantStatus {
             case PRE_START_STATION -> {
                 Integer startStation = agv.getTask().getStartStationId();
                 if (startStation != null && startStation != 0 && agv.getPlace().equals(Integer.toString(stationIdTagMap.get(startStation)))){
-//                    taskQueue.setBookedStation(startStation,0);
-                    // TODO: 取消Booked
+                    gridManager.setGridStatus(startStation, Grid.Status.FREE);
                     agv.setTaskStatus(AGV.TaskStatus.PRE_TERMINAL_STATION);
                 }
             }
             case PRE_TERMINAL_STATION -> {
                 Integer terminalStation = agv.getTask().getTerminalStationId();
                 if (terminalStation != null && terminalStation != 0 && agv.getPlace().equals(Integer.toString(stationIdTagMap.get(terminalStation)))){
-//                    taskQueue.setBookedStation(terminalStation,0);
-                    // TODO: 取消Booked
+                    gridManager.setGridStatus(terminalStation, Grid.Status.OCCUPIED);
                     agv.setTaskStatus(AGV.TaskStatus.COMPLETED);
                 }
             }
@@ -197,7 +190,8 @@ public class AGVInstantStatus {
 
     private void handleTagError(boolean[] taskStatus, AGV agv){
         if (taskStatus[0] && !agv.isLastTaskBuffer()) {
-            if(!agv.isFixAgvTagErrorCompleted()){
+//            if(!agv.isFixAgvTagErrorCompleted()) OLD
+            if(agv.getStatus() == AGV.Status.WRONG_TAG_NUMBER){
                 fixAgvTagError(agv);
             }
         } else if (taskStatus[0] && agv.isLastTaskBuffer()) {
@@ -206,7 +200,7 @@ public class AGVInstantStatus {
             agv.setTagErrorDispatchCompleted(false);
             agv.setLastTaskBuffer(false);
         } else if (!taskStatus[0]) {
-            if(!agv.isTagErrorDispatchCompleted()){
+            if(!agv.isTagErrorDispatchCompleted() || taskStatus[7]){
                 try{
                     tagErrorDispatch(agv);
                 } catch (IllegalStateException e){
@@ -214,6 +208,7 @@ public class AGVInstantStatus {
                 }
             }
             agv.setLastTaskBuffer(true);
+
         }
 
     }
@@ -241,7 +236,7 @@ public class AGVInstantStatus {
     }
 
     private void handleExecutingTask(AGV agv){
-        if(!agv.getTask().getTaskNumber().startsWith("#SB")){
+        if(!agv.getTask().getTaskNumber().matches("#(SB|LB).*")){
             CountUtilizationRate.isWorking[agv.getId()-1] = true;
         }
     }
@@ -421,7 +416,8 @@ public class AGVInstantStatus {
     private void fixAgvTagError(AGV agv) {
         Duration timeout = Duration.ofSeconds(HTTP_TIMEOUT);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(agvUrl + "/cmd=" + agv.getId() + "&QJ0130X"))
+                .uri(URI.create(agvUrl + "/cmd=" + agv.getId() + "&QJ0131X"))
+//                .uri(URI.create(agvUrl + "/cmd=" + agv.getId() + "&QJ0130X"))
                 .GET()
                 .timeout(timeout)
                 .build();
