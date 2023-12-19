@@ -85,7 +85,7 @@ public class ProcessAGVTask {
                     // TODO: 刪除任務，可以直接將agv抱著的task -> null
                 }
 
-            } else if (!taskQueueIEmpty && !iAtStandbyStation){  // TODO: 派遣回待命點
+            } else if (taskQueueIEmpty && !iAtStandbyStation){  // TODO: 派遣回待命點
                 goStandbyTask(agv);
             }
 
@@ -101,6 +101,7 @@ public class ProcessAGVTask {
                 .map(Station::getTag).toList();
 
         for (int standbyTag : standbyTags) {
+            standbyTag = ((standbyTag-1000)%250)+1000;
             if (standbyTag == placeVal
                     || standbyTag+250 == placeVal
                     || standbyTag+500 == placeVal
@@ -188,7 +189,7 @@ public class ProcessAGVTask {
         agv.setTask(null);
     }
 
-    public void completedTask(AGV agv){
+    public void completedTask(AGV agv, NotificationDao.Title agvTitle){
         AGVQTask task = agv.getTask();
         if(!task.getTaskNumber().matches("#(SB|LB).*")){
             int analysisId = analysisDao.getTodayAnalysisId().get(task.getAgvId() - 1).getAnalysisId();
@@ -197,6 +198,7 @@ public class ProcessAGVTask {
             gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
+        notificationDao.insertMessage(agvTitle, "Completed task "+task.getTaskNumber());
         taskListDao.updateTaskListStatus(task.getTaskNumber(), 100);
         agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
         agv.setTask(null);
@@ -228,7 +230,7 @@ public class ProcessAGVTask {
         AGVQTask toStandbyTask = new AGVQTask();
         toStandbyTask.setAgvId(agv.getId());
         toStandbyTask.setModeId(1);
-        toStandbyTask.setStatus(0);
+        toStandbyTask.setStatus(1);
         toStandbyTask.setTaskNumber(taskNumber);
         toStandbyTask.setStartStationId(standbyStation.get());
         toStandbyTask.setStartStation(standbyStationName);
@@ -241,7 +243,7 @@ public class ProcessAGVTask {
 
         taskListDao.insertTaskList(toStandbyTask.getTaskNumber(), formattedDateTime, toStandbyTask.getAgvId(),
                 toStandbyTask.getStartStationId(), toStandbyTask.getTerminalStationId(),
-                TaskListDao.Mode.DEFAULT);
+                TaskListDao.Mode.DEFAULT, toStandbyTask.getStatus());
         dispatchTaskToAGV(agv);
     }
     public boolean getIsRetrying(){

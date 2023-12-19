@@ -31,7 +31,7 @@ public class StationDaoImpl implements StationDao {
     }
     @Override
     public List<Station> queryStandbyStations(){
-        String sql = "SELECT * FROM `station_data` WHERE `name` LIKE '%-S'";
+        String sql = "SELECT * FROM `station_data` WHERE `name` LIKE 'S-%'";
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Station.class));
     }
 

@@ -31,6 +31,18 @@ public class AGVTaskManager {
     @PostConstruct
     public void initialize() {
         agvIdDao.queryAGVList().forEach(agvId -> taskQueueMap.put(agvId.getId(), new ConcurrentLinkedDeque<>()));
+
+        // 處理資料庫中狀態為執行中的任務
+        List<TaskList> unexpectedTasks = taskListDao.queryUnexpectedTaskLists();
+        unexpectedTasks.forEach(taskList -> {
+            // 這邊直接刪除任務
+            if(!taskList.getTaskNumber().matches("#(SB|LB).*")){
+                gridManager.setGridStatus(taskList.getStartId(), Grid.Status.OCCUPIED);
+                gridManager.setGridStatus(taskList.getTerminalId(), Grid.Status.FREE);
+            }
+            taskListDao.cancelTaskList(taskList.getTaskNumber());
+        });
+
     }
 
     @Scheduled(fixedRate = 5000)
@@ -54,6 +66,8 @@ public class AGVTaskManager {
                     newTask.setModeId(taskList.getModeId());
                     newTask.setStatus(0);
                     agvQueue.offer(newTask);
+                    gridManager.setGridStatus(newTask.getStartStationId(), Grid.Status.BOOKED);
+                    gridManager.setGridStatus(newTask.getTerminalStationId(), Grid.Status.BOOKED);
                 }
             });
         });

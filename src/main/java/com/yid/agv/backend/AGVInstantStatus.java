@@ -43,6 +43,8 @@ public class AGVInstantStatus {
     @Autowired
     private StationDao stationDao;
     @Autowired
+    private TaskListDao taskListDao;
+    @Autowired
     private NotificationDao notificationDao;
     @Autowired
     private AnalysisDao analysisDao;
@@ -163,7 +165,7 @@ public class AGVInstantStatus {
 
         if (agv.isTagError()){
             handleTagError(parseAGVStatus(Integer.parseInt(data[4].trim())), agv);
-        } else if (agv.getStatus() == AGV.Status.ONLINE){
+        } else if (agv.getStatus() == AGV.Status.ONLINE && agv.getTask() != null){
             agv.setObstacleCount(0);
             // data[4] 任務狀態
             boolean[] taskStatus = parseAGVStatus(Integer.parseInt(data[4].trim()));
@@ -173,7 +175,7 @@ public class AGVInstantStatus {
                 if (taskStatus[0]) {
                     handleExecutingTask(agv);
                 } else {
-                    handleCompletedTask(agv);
+                    handleCompletedTask(agv, agvTitle);
                 }
             }
         } else if (agv.getStatus() == AGV.Status.OBSTACLE) { // 若前有障礙時
@@ -236,15 +238,22 @@ public class AGVInstantStatus {
     }
 
     private void handleExecutingTask(AGV agv){
+        if(agv.getTask().getStatus() == 1){
+            agv.getTask().setStatus(2);
+            taskListDao.updateTaskListStatus(agv.getTask().getTaskNumber(), 2);
+        }
         if(!agv.getTask().getTaskNumber().matches("#(SB|LB).*")){
             CountUtilizationRate.isWorking[agv.getId()-1] = true;
         }
     }
 
-    private void handleCompletedTask(AGV agv){
+    private void handleCompletedTask(AGV agv, NotificationDao.Title agvTitle){
+        if(agv.getTaskStatus() == AGV.TaskStatus.PRE_START_STATION || agv.getTask().getStatus() == 1){
+            return;
+        }
         CountUtilizationRate.isWorking[agv.getId()-1] = false;
         if(agv.getTask() != null){
-            processTasks.completedTask(agv);
+            processTasks.completedTask(agv, agvTitle);
             agv.setReDispatchCount(0);
         }
     }

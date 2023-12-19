@@ -86,10 +86,8 @@ function agvUpdate(agv){  // 更新資料
         
         // 更新AGV狀態
         // agvStatus[i].task(任務號碼)未使用
-        document.getElementById('AGVStatusDiv'+(i+1)).classList.remove('error');
-        document.getElementById('AGVStatusDiv'+(i+1)).classList.remove('normal');
-        document.getElementById('AGVStatus'+(i+1)).classList.remove('error');
-        document.getElementById('AGVStatus'+(i+1)).classList.remove('normal');
+        document.getElementById('AGVStatusDiv'+(i+1)).classList.remove('error', 'warning', 'normal');
+        document.getElementById('AGVStatus'+(i+1)).classList.remove('error', 'warning', 'normal');
         /*
         OFFLINE(1), ONLINE(2), MANUAL(3), REBOOT(4),
         STOP(5), DERAIL(6), COLLIDE(7), OBSTACLE(8),

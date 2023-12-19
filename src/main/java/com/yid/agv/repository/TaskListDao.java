@@ -17,6 +17,7 @@ public interface TaskListDao {
     }
 
     List<TaskList> queryUncompletedTaskLists();
+    List<TaskList> queryUnexpectedTaskLists();
     List<TaskList> queryTaskListsByDate(String date);
     List<TaskList> queryTaskLists();
     List<TaskList> queryAllTaskLists();
@@ -24,6 +25,7 @@ public interface TaskListDao {
     String selectLastTaskListNumber();
 
     boolean insertTaskList(String taskNumber, String createTime, int agvId, Integer startId, Integer terminalId, Mode mode);
+    boolean insertTaskList(String taskNumber, String createTime, int agvId, Integer startId, Integer terminalId, Mode mode, int status);
 
     boolean updateTaskListStatus(String taskNumber, int status);
 

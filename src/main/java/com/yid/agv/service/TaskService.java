@@ -88,8 +88,6 @@ public class TaskService {
 
         String taskNumber = "#NE" + getPureTaskNumber();
         taskListDao.insertTaskList(taskNumber, formattedDateTime, 1, startStationId, terminalStationId, TaskListDao.Mode.DEFAULT);
-        gridManager.setGridStatus(taskRequest.getStartGrid(), Grid.Status.BOOKED);
-        gridManager.setGridStatus(taskRequest.getTerminalGrid(), Grid.Status.BOOKED);
         return "成功發送！ 任務號碼： ".concat(taskNumber);
     }
 
