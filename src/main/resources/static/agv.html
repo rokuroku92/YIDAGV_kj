@@ -313,7 +313,7 @@
 
     
     <div class="row">
-      <div class="col-xl-7 col-lg-12">
+      <div class="col-xxl-7 col-xl-12 col-lg-12 d-flex flex-column">
         <div class="row">
           <div class="col Title">
             <label class="title">
@@ -411,8 +411,8 @@
           </div>
         </div>
 
-        <div class="row" style="justify-content: center;">
-          <div id="summ" class="col g-5" style="background-color: #3E3A39;border-radius: 0.6rem!important;padding: 3%;padding-top: 1%;color: #FFFFFF;">
+        <div class="row" style="justify-content: center;flex-grow: 1;">
+          <div id="summ" class="col g-5 d-flex flex-column">
             <div class="row">
               <div class="col-md-3 col-sm-6">
                 <label for="task_sum" class="col-form-label">總任務數量</label>
@@ -431,13 +431,17 @@
                 <input class="parse" type="text" id="rate" value="88%" readonly/>
               </div>
             </div>
-            
+            <div class="row" id="miniporter" style="display: none;flex-grow: 1;">
+              <div class="col" style="position: relative;">
+                <img class="img-fluid" style="width: 40%; position: absolute; bottom: 0; right: 0;" src="image/miniporter.svg" alt="image error">
+              </div>              
+            </div>
           </div>
         </div>
 
       </div>
 
-      <div class="col-xl-5 col-lg-12">
+      <div class="col-xxl-5 col-xl-12 col-lg-12">
         <div class="row">
           <div class="col Title">
             <label class="title">AGV List</label>

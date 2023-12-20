@@ -443,6 +443,10 @@
     margin: 0.5em;
     margin-left: 1em;
     margin-right: 1em;
+    background-color: #3E3A39;
+    border-radius: 0.6rem!important;
+    padding: 3%;
+    color: #FFFFFF;
 }
 .paddingL{
     padding: 0.2em;

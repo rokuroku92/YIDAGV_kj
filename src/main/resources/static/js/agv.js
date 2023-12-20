@@ -102,8 +102,13 @@ function agvUpdate(agv){  // 更新資料
                 break;
             case "ONLINE":
                 if(agv[i].taskStatus == "NO_TASK"){
-                    statusHTMLClass = "warning"; 
-                    statusText="IDLE";
+                    if(!agv[i].task){
+                        statusHTMLClass = "warning";
+                        statusText="IDLE";
+                    } else {
+                        // 回待命點的任務
+                        statusText="GO_STANDBY";
+                    }
                 } else {
                     statusText="WORKING";
                 }
@@ -121,7 +126,7 @@ function agvUpdate(agv){  // 更新資料
                 statusHTMLClass = "error";
                 break;
             case "COLLIDE":
-                statusHTMLClass = "warning"; 
+                statusHTMLClass = "error"; 
                 break;
             case "OBSTACLE":
                 statusHTMLClass = "warning"; 
@@ -413,19 +418,22 @@ function updateAGVPositions(station) {
 }
 
 function cancelTask(taskNumber){
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', baseUrl + "/api/cancelTask?taskNumber=" + taskNumber.slice(1), true);
-    xhr.send();
-    xhr.onload = function(){
-        if(xhr.status == 200){
-            if(this.responseText == 'OK')
-                alert("成功取消任務: ", taskNumber);
-            else
-                alert("取消任務失敗，可能是格式錯誤");
-        }else
-            alert("取消任務失敗");
-        window.location.reload();
-    };
+    let cf = confirm("是否取消任務號碼： " + taskNumber);
+    if(cf){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', baseUrl + "/api/cancelTask?taskNumber=" + taskNumber.slice(1), true);
+        xhr.send();
+        xhr.onload = function(){
+            if(xhr.status == 200){
+                if(this.responseText == 'OK')
+                    alert("成功取消任務: " + taskNumber);
+                else
+                    alert("取消任務失敗，可能是格式錯誤");
+            }else
+                alert("取消任務失敗");
+            window.location.reload();
+        };
+    }
 
 }
 
@@ -454,8 +462,8 @@ function updateGridPositions(){
 
 function analysisMargin(){
     if(document.body.clientWidth == 1600){
-        document.getElementById("analysisMargin").style.marginTop = "5em";
+        document.getElementById("miniporter").style.display = "flex";
     } else {
-        document.getElementById("analysisMargin").style.marginTop = "0px";
+        document.getElementById("miniporter").style.display = "none";
     }
 }

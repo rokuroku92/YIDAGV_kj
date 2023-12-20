@@ -112,6 +112,7 @@ INSERT INTO `grid_list`(`station_id`, `status`) VALUES(52, 0);
 INSERT INTO `grid_list`(`station_id`, `status`) VALUES(53, 0);
 INSERT INTO `grid_list`(`station_id`, `status`) VALUES(54, 0);
 INSERT INTO `grid_list`(`station_id`, `status`) VALUES(55, 0);
+INSERT INTO `grid_list`(`station_id`, `status`) VALUES(56, 6);
 
 INSERT INTO `mode_data`(`mode`, `name`, `memo`) VALUES(0, 'default', '預設模式。');
 

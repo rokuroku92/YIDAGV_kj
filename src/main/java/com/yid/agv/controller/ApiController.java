@@ -1,6 +1,8 @@
 package com.yid.agv.controller;
 
 import com.google.gson.Gson;
+import com.yid.agv.backend.agv.AGV;
+import com.yid.agv.backend.agvtask.AGVQTask;
 import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.dto.SettingRequest;
