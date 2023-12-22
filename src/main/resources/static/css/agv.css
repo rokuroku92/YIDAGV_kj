@@ -472,8 +472,8 @@
 }
 .agv {
     position: absolute;
-    width: 2vw; /* 使用vw（視窗寬度的百分比）來定義寬度 */
-    height: 2vw; /* 使用vw（視窗寬度的百分比）來定義高度 */
+    /* width: 2vw; 使用vw（視窗寬度的百分比）來定義寬度 */
+    height: 3.5%; /* 使用vw（視窗寬度的百分比）來定義高度 */
     transition: transform 3s ease;
 }
 .map-grid{

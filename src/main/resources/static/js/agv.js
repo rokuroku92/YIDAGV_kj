@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     updateNotification();
     updateGridStatus();
     getAnalysis();
-    setInterval(updateAGVStatus, 5000);
+    setInterval(updateAGVStatus, 1000);
     setInterval(updateTask, 1000);  //  每秒更新
     setInterval(updateNotification, 1000);
     setInterval(updateGridStatus, 1000);
@@ -55,6 +55,7 @@ function updateAGVStatus() {
         if(xhr.status == 200){
             var agvStatus = JSON.parse(this.responseText);
             agvUpdate(agvStatus);
+            // demoPlace();
         }
     };
 }
@@ -168,12 +169,203 @@ function agvUpdate(agv){  // 更新資料
             document.getElementById('AGVTaskNumber'+(i+1)).innerHTML = "";
             document.getElementById('AGVTaskST'+(i+1)).innerHTML = "<h5>NO TASK</h5>";
         }
-        // 更新AGV位置
-        // updateAGVPositions(agvStatus[i].place);
 
-        // updateTN();
+        // 更新AGV位置
+        if(agv[i].place){
+            updateAGVPosition(agv[i].place);
+        }
+        
     }
 }
+
+var tag = 1001;
+var tagF = true;
+function demoPlace(){
+    if(tagF){
+        if(tag<1149){
+            tag = tag + 1;
+        } else {
+            tagF = false;
+        }
+    } else {
+        if(tag>1001){
+            tag = tag - 1;
+        } else {
+            tagF = true;
+        }
+    }
+    
+    updateAGVPosition(String(tag));
+}
+
+const mapTagPositions = {
+    "1001": [27, 17.4],
+    "1002": [30.2, 17.4],
+    "1003": [27, 31],
+    "1004": [30.2, 31],
+    "1005": [27, 45],
+    "1006": [30.2, 45],
+    "1007": [27, 58.6],
+    "1008": [30.2, 58.6],
+    "1009": [30.2, 71],
+    "1010": [26.5, 71],
+    "1011": [23, 71],
+    "1012": [15, 71],
+    "1013": [12, 74],
+    "1014": [12, 76.8],
+    "1015": [14.6, 76.8],
+    "1016": [12, 80],
+    "1017": [14.6, 80],
+    "1018": [12, 83.1],
+    "1019": [14.6, 83.1],
+    "1020": [12, 86.3],
+    "1020": [12, 86.3],
+    "1021": [14.6, 86.3],
+    "1022": [12, 89.6],
+    "1023": [14.6, 89.6],
+    "1024": [20.8, 74],
+    "1025": [18.2, 76.8],
+    "1026": [20.8, 76.8],
+    "1027": [18.2, 80],
+    "1028": [20.8, 80],
+    "1029": [18.2, 83.1],
+    "1030": [20.8, 83.1],
+    "1031": [18.2, 86.3],
+    "1032": [20.8, 86.3],
+    "1033": [18.2, 89.6],
+    "1034": [20.8, 89.6],
+    "1035": [22, 76.8],
+    "1036": [26, 76.8],
+    "1037": [28, 80.5],
+    "1038": [33.8, 80.5],
+    "1039": [31, 76.8],
+    "1040": [29.5, 76.8],
+    "1041": [37, 76.8],
+    "1042": [38.33, 76.8],
+    "1043": [40, 80.5],
+    "1044": [45, 76.8],
+    "1045": [41.83, 76.8],
+    "1046": [46.3, 76.8],
+    "1047": [47.8, 75],
+    "1048": [47.8, 73],
+    "1049": [36, 71],
+    "1050": [42, 71],
+    "1051": [49, 71],
+    "1052": [50.2, 71],
+    "1053": [50.2, 81],
+    "1054": [55, 71],
+    "1055": [58, 71],
+    "1056": [65, 77],
+    "1057": [66.2, 77],
+    "1058": [67.1, 77],
+    "1059": [68.9, 77],
+    "1060": [68.9, 82],
+    "1061": [70.6, 77],
+    "1062": [70.6, 82],
+    "1063": [72.2, 77],
+    "1064": [72.2, 82],
+    "1065": [73.9, 77],
+    "1066": [73.9, 82],
+    "1067": [75.6, 77],
+    "1068": [75.6, 82],
+    "1069": [77.3, 77],
+    "1070": [77.3, 82],
+    "1071": [79, 77],
+    "1072": [79, 82],
+    "1073": [80.7, 77],
+    "1074": [80.7, 82],
+    "1075": [82.5, 77],
+    "1076": [82.5, 89],
+    "1077": [82, 92.5],
+    "1078": [80.7, 92.5],
+    "1079": [80.7, 88],
+    "1080": [79, 92.5],
+    "1081": [79, 88],
+    "1082": [77.3, 92.5],
+    "1083": [77.3, 88],
+    "1084": [75.6, 92.5],
+    "1085": [75.6, 88],
+    "1086": [73.9, 92.5],
+    "1087": [73.9, 88],
+    "1088": [72.2, 92.5],
+    "1089": [72.2, 88],
+    "1090": [70.6, 92.5],
+    "1091": [70.6, 88],
+    "1092": [68.9, 92.5],
+    "1093": [68.9, 88],
+    "1094": [68, 92.5],
+    "1095": [67.1, 89],
+    "1096": [67.1, 73],
+    "1097": [80, 73],
+    "1098": [80, 67],
+    "1099": [80, 58],
+    "1100": [80, 48],
+    "1101": [77.2, 48],
+    "1102": [77.2, 40],
+    "1103": [77.2, 32],
+    "1104": [75.1, 35],
+    "1105": [75.1, 30],
+    "1106": [76.9, 27],
+    "1107": [77.2, 27],
+    "1108": [69.03, 22.3],
+    "1109": [80, 27],
+    "1110": [82.5, 27],
+    "1111": [84.4, 27],
+    "1112": [91.6, 27],
+    "1113": [93.8, 29],
+    "1114": [93.8, 31.3],
+    "1115": [90.8, 31.3],
+    "1116": [93.8, 36],
+    "1117": [90.8, 36],
+    "1118": [93.8, 40.7],
+    "1119": [90.8, 40.7],
+    "1120": [93.8, 45.4],
+    "1121": [90.8, 45.4],
+    "1122": [93.8, 50],
+    "1123": [90.8, 50],
+    "1124": [93.8, 54.5],
+    "1125": [90.8, 54.5],
+    "1126": [93.8, 59.2],
+    "1127": [90.8, 59.2],
+    "1128": [93.8, 63.7],
+    "1129": [90.8, 63.7],
+    "1130": [93.8, 65],
+    "1131": [92, 67.5],
+    "1132": [84.4, 67.5],
+    "1133": [84.4, 63.7],
+    "1134": [87.52, 63.7],
+    "1135": [84.4, 59.2],
+    "1136": [87.52, 59.2],
+    "1137": [84.4, 54.5],
+    "1138": [87.52, 54.5],
+    "1139": [84.4, 50],
+    "1140": [87.52, 50],
+    "1141": [84.4, 45.4],
+    "1142": [87.52, 45.4],
+    "1143": [84.4, 40.7],
+    "1144": [87.52, 40.7],
+    "1145": [84.4, 36],
+    "1146": [87.52, 36],
+    "1147": [84.4, 31.3],
+    "1148": [87.52, 31.3],
+}
+
+function updateAGVPosition(tag) {
+    tag = String(((Number(tag)-1000) % 250) + 1000);
+    var map = document.getElementById("map");
+    var mapWidth = map.clientWidth;
+    var mapHeight = map.clientHeight;
+    let mapGrid = document.getElementById("agv_car");
+    let agvWidth = mapGrid.clientWidth;
+    let agvHeight = mapGrid.clientHeight;
+
+    var place = mapTagPositions[tag];
+    let translate = "translate(" + ((place[0]/100) * mapWidth - (agvWidth/2)) +"px, " + ((place[1]/100) * mapHeight - (agvHeight/2)) + "px)";
+
+    document.getElementById("agv_car").style.transform = translate;
+}
+
+
 
 function updateTask() {
     var xhr = new XMLHttpRequest();
@@ -400,21 +592,6 @@ function setStationPositions() {
         document.getElementById(stationString).style.transform = "translate(" +
             (-mapWidth*(0.973-i*0.31))+"px, "+stationHeight+"px)"; // i*0.31 (0.93/(站點-1)) (0.93/(4-1))=0.31|(0.93/(5-1))
     }
-}
-
-function updateAGVPositions(station) {
-    var map = document.getElementById("map");
-    var mapWidth = map.clientWidth;
-    var stationHeight = map.clientHeight/2.53;
-    var place = parseInt(station.slice(-1)) - 1;
-    /*** 
-     * -mapWidth*(0.9765)   第一站
-     * -mapWidth*(0.05)     第四站
-     * (0.9765-0.05)/3 = 0.309 == 四站間距
-     *  ***/
-
-    // document.getElementById("agv1").style.transform = "translate(" + (-mapWidth*(0.9765))+"px, "+stationHeight+"px) rotate(90deg)";
-    document.getElementById("agv1").style.transform = "translate(" + (-mapWidth*(0.05+place*0.309))+"px, "+stationHeight+"px) rotate(90deg)";
 }
 
 function cancelTask(taskNumber){

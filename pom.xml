@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.yid</groupId>
 	<artifactId>agv</artifactId>
-	<version>0.4</version>
+	<version>1.0</version>
 	<name>agv</name>
 	<description>kj agv project with Spring Boot</description>
 	<properties>
