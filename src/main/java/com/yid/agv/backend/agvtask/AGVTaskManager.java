@@ -51,25 +51,47 @@ public class AGVTaskManager {
         List<TaskList> uncompletedTasks = taskListDao.queryUncompletedTaskLists();
 
         // 遍歷各個 AGV 的任務佇列
-        taskQueueMap.forEach((agvId, agvQueue) -> {
-            // 遍歷未完成任務列表
-            uncompletedTasks.forEach(taskList -> {
-                // 如果AGV任務佇列中的任務號碼不包含這筆未完成任務列表元素中的任務號碼
-                if (agvQueue.stream().noneMatch(task -> task.getTaskNumber().equals(taskList.getTaskNumber()))) {
-                    AGVQTask newTask = new AGVQTask();
-                    newTask.setTaskNumber(taskList.getTaskNumber());
-                    newTask.setAgvId(agvId);
-                    newTask.setStartStation(taskList.getStart());
-                    newTask.setStartStationId(taskList.getStartId());
-                    newTask.setTerminalStation(taskList.getTerminal());
-                    newTask.setTerminalStationId(taskList.getTerminalId());
-                    newTask.setModeId(taskList.getModeId());
-                    newTask.setStatus(0);
-                    agvQueue.offer(newTask);
-                    gridManager.setGridStatus(newTask.getStartStationId(), Grid.Status.BOOKED);
-                    gridManager.setGridStatus(newTask.getTerminalStationId(), Grid.Status.BOOKED);
-                }
-            });
+//        taskQueueMap.forEach((agvId, agvQueue) -> {
+//            // 遍歷未完成任務列表
+//            uncompletedTasks.forEach(taskList -> {
+//                // 如果AGV任務佇列中的任務號碼不包含這筆未完成任務列表元素中的任務號碼
+//                if (agvQueue.stream().noneMatch(task -> task.getTaskNumber().equals(taskList.getTaskNumber()))) {
+//                    AGVQTask newTask = new AGVQTask();
+//                    newTask.setTaskNumber(taskList.getTaskNumber());
+//                    newTask.setAgvId(agvId);
+//                    newTask.setStartStation(taskList.getStart());
+//                    newTask.setStartStationId(taskList.getStartId());
+//                    newTask.setTerminalStation(taskList.getTerminal());
+//                    newTask.setTerminalStationId(taskList.getTerminalId());
+//                    newTask.setModeId(taskList.getModeId());
+//                    newTask.setStatus(0);
+//                    agvQueue.offer(newTask);
+//                    gridManager.setGridStatus(newTask.getStartStationId(), Grid.Status.BOOKED);
+//                    gridManager.setGridStatus(newTask.getTerminalStationId(), Grid.Status.BOOKED);
+//                }
+//            });
+//        });
+
+        // 遍歷未完成任務列表
+        uncompletedTasks.forEach(taskList -> {
+            // 使用flag確保所有AGV任務佇列都不包含該任務號碼時才新增
+            boolean shouldAddTask = taskQueueMap.values().stream().allMatch(agvQueue ->
+                    agvQueue.stream().noneMatch(task -> task.getTaskNumber().equals(taskList.getTaskNumber())));
+
+            if (shouldAddTask) {
+                AGVQTask newTask = new AGVQTask();
+                newTask.setTaskNumber(taskList.getTaskNumber());
+                newTask.setAgvId(taskList.getAgvId());
+                newTask.setStartStation(taskList.getStart());
+                newTask.setStartStationId(taskList.getStartId());
+                newTask.setTerminalStation(taskList.getTerminal());
+                newTask.setTerminalStationId(taskList.getTerminalId());
+                newTask.setModeId(taskList.getModeId());
+                newTask.setStatus(0);
+                taskQueueMap.get(taskList.getAgvId()).offer(newTask);
+                gridManager.setGridStatus(newTask.getStartStationId(), Grid.Status.BOOKED);
+                gridManager.setGridStatus(newTask.getTerminalStationId(), Grid.Status.BOOKED);
+            }
         });
     }
 

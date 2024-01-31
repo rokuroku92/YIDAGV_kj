@@ -56,7 +56,7 @@ public class ProcessAGVTask {
     }
 
 
-    @Scheduled(fixedRate = 4000)
+    @Scheduled(fixedRate = 1000)
     public void dispatchTasks() {
         if(isRetrying)return;
 
@@ -68,10 +68,10 @@ public class ProcessAGVTask {
             boolean iAtStandbyStation = iEqualsStandbyStation(agv.getPlace());
             boolean taskQueueIEmpty = AGVTaskManager.isEmpty(agv.getId());
 
-            if(agv.isILowBattery() && !iAtStandbyStation){  // TODO: 低電量時，派遣回待命點
+            if(agv.isILowBattery() && !iAtStandbyStation){  // 低電量時，派遣回待命點
                 goStandbyTask(agv);
-            } else if (!taskQueueIEmpty && !agv.isILowBattery()){  // TODO: 正常派遣
-                // 這個專案不用寫優先派遣演算法
+            } else if (!taskQueueIEmpty && !agv.isILowBattery()){  // 正常派遣
+                // 這個專案不用寫優先派遣邏輯
                 AGVQTask goTask = AGVTaskManager.getNewTaskByAGVId(agv.getId());
                 agv.setTask(goTask);
                 System.out.println("Process dispatch...");
@@ -85,7 +85,7 @@ public class ProcessAGVTask {
                     // TODO: 刪除任務，可以直接將agv抱著的task -> null
                 }
 
-            } else if (taskQueueIEmpty && !iAtStandbyStation){  // TODO: 派遣回待命點
+            } else if (taskQueueIEmpty && !iAtStandbyStation){  // 派遣回待命點
                 goStandbyTask(agv);
             }
 
@@ -121,6 +121,11 @@ public class ProcessAGVTask {
                 AGVQTask task = agv.getTask();
                 if (task == null) return false;
                 String nowPlace = agv.getPlace();
+                if(nowPlace.equals(task.getTerminalStation())){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
+                    completedTask(agv, NotificationDao.Title.AGV_1);
+                    agv.setReDispatchCount(0);
+                    return true;
+                }
                 String url;
                 if (task.getTaskNumber().matches("#(SB|LB).*") || agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION){
                     url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
@@ -177,6 +182,7 @@ public class ProcessAGVTask {
         }
         System.err.println("Failed to dispatch task after " + MAX_RETRY + " attempts.");
         System.out.println("任務發送三次皆失敗，已取消任務");
+        failedTask(agv);
         notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK_THREE_TIMES);
         isRetrying = false;
         return false;
