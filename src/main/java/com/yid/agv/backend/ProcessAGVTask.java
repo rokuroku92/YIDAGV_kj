@@ -82,7 +82,6 @@ public class ProcessAGVTask {
                     taskListDao.updateTaskListStatus(goTask.getTaskNumber(), 1);
                 } else {
                     failedTask(agv);
-                    // TODO: 刪除任務，可以直接將agv抱著的task -> null
                 }
 
             } else if (taskQueueIEmpty && !iAtStandbyStation){  // 派遣回待命點
@@ -152,7 +151,10 @@ public class ProcessAGVTask {
                 if(webpageContent.equals("OK")){
                     System.out.println("Task number " + task.getTaskNumber() + " has been dispatched.");
                     return true;
-                } else if (webpageContent.equals("FAIL")) {
+                } else if (webpageContent.equals("FAIL") || webpageContent.equals("BUSY")) {
+                    if (webpageContent.equals("BUSY")) {
+                        System.out.println("Traffic Control reply: BUSY");
+                    }
                     System.out.println("發送任務FAIL");
                     isRetrying = true;
                     retryCount++;
@@ -191,7 +193,9 @@ public class ProcessAGVTask {
     public void failedTask(AGV agv){
         AGVQTask task = agv.getTask();
         System.err.println("Failed task:" + task);
-        AGVTaskManager.removeTaskByTaskNumber(task.getTaskNumber());
+        gridManager.setGridStatus(task.getStartStationId(), Grid.Status.OCCUPIED);
+        gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.FREE);
+        taskListDao.cancelTaskList(task.getTaskNumber());
         agv.setTask(null);
     }
 

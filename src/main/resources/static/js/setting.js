@@ -16,6 +16,7 @@ function getConfig(){
             document.getElementById("agvLowBattery").value = configJSON.agv.low_battery;
             document.getElementById("agvLowBatteryDuration").value = configJSON.agv.low_battery_duration;
             document.getElementById("agvObstacleDuration").value = configJSON.agv.obstacle_duration;
+            document.getElementById("agvTaskExceptionOption").value = configJSON.agv.task_exception_option;
             document.getElementById("httpTimeout").value = configJSON.http.timeout;
             document.getElementById("httpMaxRetry").value = configJSON.http.max_retry;
         }
@@ -27,26 +28,44 @@ function setConfig(){
     let agvLowBattery = document.getElementById("agvLowBattery").value;
     let agvLowBatteryDuration = document.getElementById("agvLowBatteryDuration").value;
     let agvObstacleDuration = document.getElementById("agvObstacleDuration").value;
+    let agvTaskExceptionOption = document.getElementById("agvTaskExceptionOption").value;
     let httpTimeout = document.getElementById("httpTimeout").value;
     let httpMaxRetry = document.getElementById("httpMaxRetry").value;
+
     if(agvControlUrl === ""){
-        return "AgvControlUrl參數為空值";
+        alert("AgvControlUrl參數為空值");
+        return;
     } else if(agvLowBattery === ""){
-        return "AgvLowBattery參數為空值";
+        alert("AgvLowBattery參數為空值");
+        return;
     } else if(agvLowBatteryDuration === ""){
-        return "AgvLowBatteryDuration參數為空值";
+        alert("AgvLowBatteryDuration參數為空值");
+        return;
     } else if(agvObstacleDuration === ""){
-        return "AgvObstacleDuration參數為空值";
+        alert("AgvObstacleDuration參數為空值");
+        return;
+    } else if(agvTaskExceptionOption === ""){
+        alert("AgvTaskExceptionOption參數為空值");
+        return;
     } else if(httpTimeout === ""){
-        return "HttpTimeout參數為空值";
+        alert("HttpTimeout參數為空值");
+        return;
     } else if(httpMaxRetry === ""){
-        return "HttpMaxRetry參數為空值";
+        alert("HttpMaxRetry參數為空值");
+        return;
     }
+
+    if(agvTaskExceptionOption != 0 && agvTaskExceptionOption != 1){
+        alert("agvTaskExceptionOption參數輸入錯誤，應為0|1");
+        return;
+    }
+
     let config = {
         agvControlUrl: agvControlUrl,
         agvLowBattery: agvLowBattery,
         agvLowBatteryDuration: agvLowBatteryDuration,
         agvObstacleDuration: agvObstacleDuration,
+        agvTaskExceptionOption: agvTaskExceptionOption,
         httpTimeout: httpTimeout,
         httpMaxRetry: httpMaxRetry
     };
@@ -61,6 +80,9 @@ function setConfig(){
     }).then(response => {
         // 处理后端的响应
         alert(response);
+        if(response == "OK"){
+            alert("請重新啟動Server方可生效。");
+        }
     }).catch(error => {
         // 处理错误
         alert("修改失敗: ", error);

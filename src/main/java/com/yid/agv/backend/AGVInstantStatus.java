@@ -2,6 +2,7 @@ package com.yid.agv.backend;
 
 import com.yid.agv.backend.agv.AGVManager;
 import com.yid.agv.backend.agv.AGV;
+import com.yid.agv.backend.agvtask.AGVQTask;
 import com.yid.agv.backend.station.Grid;
 import com.yid.agv.backend.station.GridManager;
 import com.yid.agv.backend.agvtask.AGVTaskManager;
@@ -38,6 +39,8 @@ public class AGVInstantStatus {
     private int LOW_BATTERY_DURATION;
     @Value("${agv.obstacle_duration}")
     private int OBSTACLE_DURATION;
+    @Value("${agv.task_exception_option}")
+    private int TASK_EXCEPTION_OPTION;
     @Autowired
     private AGVIdDao agvIdDao;
     @Autowired
@@ -175,7 +178,7 @@ public class AGVInstantStatus {
                 if (taskStatus[0]) {
                     handleExecutingTask(agv);
                 } else {
-                    handleCompletedTask(agv, agvTitle);
+                    handleNotExecutingTask(agv, agvTitle);
                 }
             }
         } else if (agv.getStatus() == AGV.Status.OBSTACLE) { // 若前有障礙時
@@ -247,14 +250,27 @@ public class AGVInstantStatus {
         }
     }
 
-    private void handleCompletedTask(AGV agv, NotificationDao.Title agvTitle){
-        if(agv.getTaskStatus() == AGV.TaskStatus.PRE_START_STATION || agv.getTask().getStatus() == 1){
+    private void handleNotExecutingTask(AGV agv, NotificationDao.Title agvTitle){
+//        if(agv.getTaskStatus() == AGV.TaskStatus.PRE_START_STATION || agv.getTask().getStatus() == 1){
+        if(agv.getTask().getStatus() == 1){
             return;
         }
         CountUtilizationRate.isWorking[agv.getId()-1] = false;
-        if(agv.getTask() != null){
-            processTasks.completedTask(agv, agvTitle);
-            agv.setReDispatchCount(0);
+        AGVQTask task = agv.getTask();
+        if(task != null){
+            if(agv.getPlace().equals(stationDao.getStationTagByGridName(task.getTerminalStation()))){
+                // handleCompletedTask
+                processTasks.completedTask(agv, agvTitle);
+                agv.setReDispatchCount(0);
+            } else {
+                // 刪除任務或重派任務
+                switch (TASK_EXCEPTION_OPTION){
+                    case 0 -> processTasks.failedTask(agv);
+                    case 1 -> processTasks.dispatchTaskToAGV(agv);
+                    default -> System.out.println("TASK_EXCEPTION_OPTION值錯誤");
+                }
+            }
+
         }
     }
 

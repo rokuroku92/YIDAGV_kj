@@ -15,9 +15,8 @@ import java.util.Map;
 
 @Service
 public class SettingService {
-    @Value("classpath:application.yml") // 指定 YAML 文件路径，根据实际情况修改
+    @Value("classpath:application.yml")
     private Resource yamlFile;
-
 
     public Map<String, Object> getConfig() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
@@ -35,6 +34,8 @@ public class SettingService {
                 return "AgvLowBatteryDuration參數為空值";
             } else if(settingRequest.getAgvObstacleDuration() == null){
                 return "AgvObstacleDuration參數為空值";
+            }else if(settingRequest.getAgvTaskExceptionOption() == null){
+                return "AgvTaskExceptionOption參數為空值";
             } else if(settingRequest.getHttpTimeout() == null){
                 return "HttpTimeout參數為空值";
             } else if(settingRequest.getHttpMaxRetry() == null){
@@ -47,17 +48,25 @@ public class SettingService {
     }
 
     private String writeConfigToFile(SettingRequest settingRequest){
-        Map<String, Object> yamlMap = new HashMap<>();
-        yamlMap.put("jdbc.url", "jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true");
-        yamlMap.put("jdbc.username", "root");
-        yamlMap.put("jdbc.password", "12345678");
-        yamlMap.put("agvControl.url", settingRequest.getAgvControlUrl());
-        yamlMap.put("agv.low_battery", settingRequest.getAgvLowBattery());
-        yamlMap.put("agv.low_battery_duration", settingRequest.getAgvLowBatteryDuration());
-        yamlMap.put("agv.obstacle_duration", settingRequest.getAgvObstacleDuration());
-        yamlMap.put("http.timeout", settingRequest.getHttpTimeout());
-        yamlMap.put("http.max_retry", settingRequest.getHttpMaxRetry());
+        Map<String, Object> yamlMap;
 
+        try (FileReader reader = new FileReader("src/main/resources/application.yml")) {
+            Yaml yaml = new Yaml();
+            yamlMap = yaml.load(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        updateYamlMap(yamlMap, "jdbc.url", "jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true");
+        updateYamlMap(yamlMap, "jdbc.username", "root");
+        updateYamlMap(yamlMap, "jdbc.password", "12345678");
+        updateYamlMap(yamlMap, "agvControl.url", settingRequest.getAgvControlUrl());
+        updateYamlMap(yamlMap, "agv.low_battery", settingRequest.getAgvLowBattery());
+        updateYamlMap(yamlMap, "agv.low_battery_duration", settingRequest.getAgvLowBatteryDuration());
+        updateYamlMap(yamlMap, "agv.obstacle_duration", settingRequest.getAgvObstacleDuration());
+        updateYamlMap(yamlMap, "agv.task_exception_option", settingRequest.getAgvTaskExceptionOption());
+        updateYamlMap(yamlMap, "http.timeout", settingRequest.getHttpTimeout());
+        updateYamlMap(yamlMap, "http.max_retry", settingRequest.getHttpMaxRetry());
 
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -70,5 +79,16 @@ public class SettingService {
             e.printStackTrace();
             return "寫入失敗";
         }
+    }
+
+    private static void updateYamlMap(Map<String, Object> yamlMap, String key, Object value) {
+        Map<String, Object> currentMap = yamlMap;
+        String[] keys = key.split("\\.");
+
+        for (int i = 0; i < keys.length - 1; i++) {
+            currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keys[i], k -> new HashMap<>());
+        }
+
+        currentMap.put(keys[keys.length - 1], value);
     }
 }

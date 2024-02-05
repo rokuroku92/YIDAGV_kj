@@ -8,6 +8,7 @@ public class SettingRequest {
     private Integer agvLowBattery;
     private Integer agvLowBatteryDuration;
     private Integer agvObstacleDuration;
+    private Integer agvTaskExceptionOption;
     private Integer httpTimeout;
     private Integer httpMaxRetry;
 }

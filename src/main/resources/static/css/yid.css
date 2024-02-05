@@ -1,3 +1,12 @@
+@font-face{
+    font-family: NewFont;
+    src: url("US101.TTF");
+    font-weight: bold;
+}
+::-webkit-scrollbar {
+    display: none;
+}
+
 body {
     padding: 0px;
     background-color: #2F2725;
