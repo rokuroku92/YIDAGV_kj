@@ -107,6 +107,10 @@ public class AGVTaskManager {
         return taskQueueMap.get(agvId).poll();
     }
 
+    public AGVQTask peekNewTaskByAGVId(int agvId){
+        return taskQueueMap.get(agvId).peek();
+    }
+
     public boolean isEmpty(int agvId){
         return taskQueueMap.get(agvId).isEmpty();
     }

@@ -72,18 +72,25 @@ public class ProcessAGVTask {
                 goStandbyTask(agv);
             } else if (!taskQueueIEmpty && !agv.isILowBattery()){  // 正常派遣
                 // 這個專案不用寫優先派遣邏輯
-                AGVQTask goTask = AGVTaskManager.getNewTaskByAGVId(agv.getId());
-                agv.setTask(goTask);
+                AGVQTask goTask = AGVTaskManager.peekNewTaskByAGVId(agv.getId());
                 System.out.println("Process dispatch...");
-                System.out.println("AGV place: " + agv.getPlace());
-                if(dispatchTaskToAGV(agv)){
-                    Objects.requireNonNull(goTask).setStatus(1);
-                    agv.setTaskStatus(AGV.TaskStatus.PRE_START_STATION);
-                    taskListDao.updateTaskListStatus(goTask.getTaskNumber(), 1);
-                } else {
-                    failedTask(agv);
+                String result = dispatchTaskToAGV(agv, goTask);
+                switch (result) {
+                    case "OK" -> {
+                        AGVTaskManager.getNewTaskByAGVId(agv.getId());
+                        agv.setTask(goTask);
+                        Objects.requireNonNull(goTask).setStatus(1);
+                        agv.setTaskStatus(AGV.TaskStatus.PRE_START_STATION);
+                        taskListDao.updateTaskListStatus(goTask.getTaskNumber(), 1);
+                    }
+                    case "BUSY" -> {}
+                    case "FAIL" -> {
+                        AGVTaskManager.getNewTaskByAGVId(agv.getId());
+                        agv.setTask(goTask);
+                        failedTask(agv);
+                    }
+                    default -> System.out.println("dispatchTaskToAGV result exception: " + result);
                 }
-
             } else if (taskQueueIEmpty && !iAtStandbyStation){  // 派遣回待命點
                 goStandbyTask(agv);
             }
@@ -112,24 +119,24 @@ public class ProcessAGVTask {
     }
 
     private boolean isRetrying = false;
-    public synchronized boolean dispatchTaskToAGV(AGV agv) {
+    public synchronized String dispatchTaskToAGV(AGV agv, AGVQTask task) {
         int retryCount = 0;
         while (retryCount < MAX_RETRY) {
             try {
-                // Dispatch the task to the AGV control system
-                AGVQTask task = agv.getTask();
-                if (task == null) return false;
+                // Dispatch the task to the Traffic Control
+                if (task == null) return null;
+
                 String nowPlace = agv.getPlace();
                 if(nowPlace.equals(task.getTerminalStation())){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
-                    completedTask(agv, NotificationDao.Title.AGV_1);
+                    completedTask(agv);
                     agv.setReDispatchCount(0);
-                    return true;
+                    return "OK";
                 }
                 String url;
                 if (task.getTaskNumber().matches("#(SB|LB).*") || agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION){
                     url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                             "&" + stationIdTagMap.get(task.getTerminalStationId());
-                } else if (task.getTaskNumber().startsWith("#YE")|| task.getTaskNumber().startsWith("#RE") || task.getTaskNumber().startsWith("#NE")){
+                } else if (task.getTaskNumber().startsWith("#YE") || task.getTaskNumber().startsWith("#RE") || task.getTaskNumber().startsWith("#NE")){
                     url = agvUrl + "/task0=" + task.getAgvId() + "&" + task.getModeId() + "&" + nowPlace +
                             "&" + stationIdTagMap.get(task.getStartStationId()) + "&" + stationIdTagMap.get(task.getTerminalStationId());
                 } else {
@@ -148,27 +155,32 @@ public class ProcessAGVTask {
                 HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 String webpageContent = response.body().trim();
 
-                if(webpageContent.equals("OK")){
-                    System.out.println("Task number " + task.getTaskNumber() + " has been dispatched.");
-                    return true;
-                } else if (webpageContent.equals("FAIL") || webpageContent.equals("BUSY")) {
-                    if (webpageContent.equals("BUSY")) {
-                        System.out.println("Traffic Control reply: BUSY");
+                switch (webpageContent) {
+                    case "OK" -> {
+                        System.out.println("Task number " + task.getTaskNumber() + " has been dispatched.");
+                        return "OK";
                     }
-                    System.out.println("發送任務FAIL");
-                    isRetrying = true;
-                    retryCount++;
-                    System.out.println("發送任務回覆失敗，3秒後重新發送");
-                    notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK);
-                    System.err.println("Failed to dispatch task, retrying... (Attempt " + retryCount + ")");
-                    try {
-                        Thread.sleep(3000); // 延遲再重新發送
-                    } catch (InterruptedException ignored) {
+                    case "BUSY" -> {
+                        System.out.println("Send task failed: BUSY");
+                        return "BUSY";
                     }
-                } else {
-                    System.err.println("Undefined AGV System message: " + webpageContent);
-                    notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
-                    return false;
+                    case "FAIL" -> {
+                        System.out.println("發送任務FAIL");
+                        isRetrying = true;
+                        retryCount++;
+                        System.out.println("發送任務回覆失敗，3秒後重新發送");
+                        notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK);
+                        System.err.println("Failed to dispatch task, retrying... (Attempt " + retryCount + ")");
+                        try {
+                            Thread.sleep(3000); // 延遲再重新發送
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                    default -> {
+                        System.err.println("Undefined AGV System message: " + webpageContent);
+                        notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
+                        return "FAIL";
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 System.out.println("發送任務發生意外，3秒後重新發送");
@@ -187,7 +199,11 @@ public class ProcessAGVTask {
         failedTask(agv);
         notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_SEND_TASK_THREE_TIMES);
         isRetrying = false;
-        return false;
+        return "FAIL";
+    }
+
+    public synchronized String dispatchTaskToAGV(AGV agv) {
+        return dispatchTaskToAGV(agv, agv.getTask());
     }
 
     public void failedTask(AGV agv){
@@ -199,7 +215,7 @@ public class ProcessAGVTask {
         agv.setTask(null);
     }
 
-    public void completedTask(AGV agv, NotificationDao.Title agvTitle){
+    public void completedTask(AGV agv){
         AGVQTask task = agv.getTask();
         if(!task.getTaskNumber().matches("#(SB|LB).*")){
             int analysisId = analysisDao.getTodayAnalysisId().get(task.getAgvId() - 1).getAnalysisId();
@@ -208,7 +224,7 @@ public class ProcessAGVTask {
             gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.OCCUPIED);  // Booked to Occupied
         }
         System.out.println("Completed task number "+task.getTaskNumber()+".");
-        notificationDao.insertMessage(agvTitle, "Completed task "+task.getTaskNumber());
+        notificationDao.insertMessage(agv.getTitle(), "Completed task "+task.getTaskNumber());
         taskListDao.updateTaskListStatus(task.getTaskNumber(), 100);
         agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
         agv.setTask(null);

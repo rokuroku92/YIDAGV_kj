@@ -78,21 +78,15 @@ public class AGVInstantStatus {
         if(agvStatusData.length == 0) {
             for (int i = 0; i < agvManager.getAgvLength(); i++) {
                 AGV agv = agvManager.getAgv(i+1);
-                NotificationDao.Title agvTitle = NotificationDao.Title.AGV_1;
-//                NotificationDao.Title agvTitle = switch (i) {
-//                    case 0 -> NotificationDao.Title.AGV_1;
-//                    default -> throw new IllegalStateException("Unexpected agvManager.getAgvLength() value: " + i);
-//                };
-                updateAGVOfflineStatus(agv, agvTitle, i);
+                updateAGVOfflineStatus(agv);
             }
             return;
         }
         for (int i = 0; i < agvManager.getAgvLength(); i++) {
             AGV agv = agvManager.getAgv(i+1);
             String[] data = agvStatusData[i].split(",");  // 分隔 AGV 系統資料
-            NotificationDao.Title agvTitle = NotificationDao.Title.AGV_1;  // 只有一台
 
-            updateAGVBasicStatus(agv, data, agvTitle, i);
+            updateAGVBasicStatus(agv, data);
             updateTaskStatus(agv);
         }
     }
@@ -120,29 +114,25 @@ public class AGVInstantStatus {
     }
 
 
-    private void updateAGVBasicStatus(AGV agv, String[] data, NotificationDao.Title agvTitle, int i){
+    private void updateAGVBasicStatus(AGV agv, String[] data){
         if(data[0].trim().equals("-1")){  // 車號為-1時，判定為AGV離線
-            updateAGVOfflineStatus(agv, agvTitle, i);
+            updateAGVOfflineStatus(agv);
         } else {
-            updateAGVOnlineStatus(agv, data, agvTitle, i);
+            updateAGVOnlineStatus(agv, data);
         }
     }
 
-    private void updateAGVOfflineStatus(AGV agv, NotificationDao.Title agvTitle, int i){
+    private void updateAGVOfflineStatus(AGV agv){
         if(agv.getStatus() != AGV.Status.OFFLINE){
-            notificationDao.insertMessage(agvTitle, NotificationDao.Status.OFFLINE);
+            notificationDao.insertMessage(agv.getTitle(), NotificationDao.Status.OFFLINE);
             agv.setStatus(AGV.Status.OFFLINE);
             agv.setSignal(0);
             agv.setBattery(0);
-            CountUtilizationRate.isPoweredOn[i] = false;
-            CountUtilizationRate.isWorking[i] = false;
         }
     }
 
 
-    private void updateAGVOnlineStatus(AGV agv, String[] data, NotificationDao.Title agvTitle, int i){
-        CountUtilizationRate.isPoweredOn[i] = true;
-
+    private void updateAGVOnlineStatus(AGV agv, String[] data){
         // data[1] 位置
         agv.setPlace(data[1].trim());
         // data[2] 訊號
@@ -152,7 +142,7 @@ public class AGVInstantStatus {
         if(agv.getBattery()<LOW_BATTERY){
             if(agv.getLowBatteryCount()>LOW_BATTERY_DURATION){
                 if(!agv.isILowBattery()){
-                    notificationDao.insertMessage(agvTitle, NotificationDao.Status.BATTERY_TOO_LOW);
+                    notificationDao.insertMessage(agv.getTitle(), NotificationDao.Status.BATTERY_TOO_LOW);
                     agv.setILowBattery(true);
                 }
             } else {
@@ -164,7 +154,7 @@ public class AGVInstantStatus {
         }
 
         // data[5] agv狀態
-        updateAgvStatus(agv, data[5].trim(), agvTitle);
+        updateAgvStatus(agv, data[5].trim());
 
         if (agv.isTagError()){
             handleTagError(parseAGVStatus(Integer.parseInt(data[4].trim())), agv);
@@ -178,7 +168,7 @@ public class AGVInstantStatus {
                 if (taskStatus[0]) {
                     handleExecutingTask(agv);
                 } else {
-                    handleNotExecutingTask(agv, agvTitle);
+                    handleNotExecutingTask(agv);
                 }
             }
         } else if (agv.getStatus() == AGV.Status.OBSTACLE) { // 若前有障礙時
@@ -233,7 +223,7 @@ public class AGVInstantStatus {
     }
 
     private void tagErrorDispatch(AGV agv){
-        if(processTasks.dispatchTaskToAGV(agv)) {
+        if(processTasks.dispatchTaskToAGV(agv).equals("OK")) {
             agv.setTagErrorDispatchCompleted(true);
         } else {
             throw new IllegalStateException("Unexpected Path!");
@@ -245,28 +235,30 @@ public class AGVInstantStatus {
             agv.getTask().setStatus(2);
             taskListDao.updateTaskListStatus(agv.getTask().getTaskNumber(), 2);
         }
-        if(!agv.getTask().getTaskNumber().matches("#(SB|LB).*")){
-            CountUtilizationRate.isWorking[agv.getId()-1] = true;
-        }
     }
 
-    private void handleNotExecutingTask(AGV agv, NotificationDao.Title agvTitle){
+    private void handleNotExecutingTask(AGV agv){
 //        if(agv.getTaskStatus() == AGV.TaskStatus.PRE_START_STATION || agv.getTask().getStatus() == 1){
         if(agv.getTask().getStatus() == 1){
             return;
         }
-        CountUtilizationRate.isWorking[agv.getId()-1] = false;
         AGVQTask task = agv.getTask();
         if(task != null){
             if(agv.getPlace().equals(stationDao.getStationTagByGridName(task.getTerminalStation()))){
                 // handleCompletedTask
-                processTasks.completedTask(agv, agvTitle);
+                processTasks.completedTask(agv);
                 agv.setReDispatchCount(0);
             } else {
                 // 刪除任務或重派任務
                 switch (TASK_EXCEPTION_OPTION){
                     case 0 -> processTasks.failedTask(agv);
-                    case 1 -> processTasks.dispatchTaskToAGV(agv);
+                    case 1 -> {
+                        if (agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION) {
+                            processTasks.failedTask(agv);
+                        } else {
+                            processTasks.dispatchTaskToAGV(agv);
+                        }
+                    }
                     default -> System.out.println("TASK_EXCEPTION_OPTION值錯誤");
                 }
             }
@@ -274,7 +266,8 @@ public class AGVInstantStatus {
         }
     }
 
-    private void updateAgvStatus(AGV agv, String data, NotificationDao.Title agvTitle){
+    private void updateAgvStatus(AGV agv, String data){
+        NotificationDao.Title agvTitle = agv.getTitle();
         switch (Integer.parseInt(data) / 10) {
             case 0 -> {
                 switch (Integer.parseInt(data) % 10) {
@@ -426,8 +419,6 @@ public class AGVInstantStatus {
             return Optional.of(data);
         } catch (IOException | InterruptedException e) {
 //            e.printStackTrace();
-            CountUtilizationRate.isPoweredOn = new boolean[agvIdDao.queryAGVList().size()];
-            CountUtilizationRate.isWorking = new boolean[agvIdDao.queryAGVList().size()];
             if(iCon){
                 System.out.println("AGV 控制系統未連線");
                 notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.OFFLINE);
