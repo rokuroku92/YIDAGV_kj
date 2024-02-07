@@ -107,7 +107,7 @@ public class ProcessAGVTask {
                 .map(Station::getTag).toList();
 
         for (int standbyTag : standbyTags) {
-            standbyTag = ((standbyTag-1000)%250)+1000;
+            standbyTag = standbyTag/1000*1000 + (standbyTag%250);
             if (standbyTag == placeVal
                     || standbyTag+250 == placeVal
                     || standbyTag+500 == placeVal
@@ -129,7 +129,6 @@ public class ProcessAGVTask {
                 String nowPlace = agv.getPlace();
                 if(nowPlace.equals(task.getTerminalStation())){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
                     completedTask(agv);
-                    agv.setReDispatchCount(0);
                     return "OK";
                 }
                 String url;
@@ -208,10 +207,13 @@ public class ProcessAGVTask {
 
     public void failedTask(AGV agv){
         AGVQTask task = agv.getTask();
-        System.err.println("Failed task:" + task);
+        System.out.println("Failed task:" + task);
         gridManager.setGridStatus(task.getStartStationId(), Grid.Status.OCCUPIED);
         gridManager.setGridStatus(task.getTerminalStationId(), Grid.Status.FREE);
+        notificationDao.insertMessage(agv.getTitle(), "Failed task "+task.getTaskNumber());
         taskListDao.cancelTaskList(task.getTaskNumber());
+        agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
+        agv.setReDispatchCount(0);
         agv.setTask(null);
     }
 
@@ -227,6 +229,7 @@ public class ProcessAGVTask {
         notificationDao.insertMessage(agv.getTitle(), "Completed task "+task.getTaskNumber());
         taskListDao.updateTaskListStatus(task.getTaskNumber(), 100);
         agv.setTaskStatus(AGV.TaskStatus.NO_TASK);
+        agv.setReDispatchCount(0);
         agv.setTask(null);
     }
 

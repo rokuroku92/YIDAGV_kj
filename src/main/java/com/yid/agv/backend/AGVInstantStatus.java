@@ -247,7 +247,6 @@ public class AGVInstantStatus {
             if(agv.getPlace().equals(stationDao.getStationTagByGridName(task.getTerminalStation()))){
                 // handleCompletedTask
                 processTasks.completedTask(agv);
-                agv.setReDispatchCount(0);
             } else {
                 // 刪除任務或重派任務
                 switch (TASK_EXCEPTION_OPTION){
