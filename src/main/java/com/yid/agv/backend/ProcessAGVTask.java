@@ -60,10 +60,9 @@ public class ProcessAGVTask {
     public void dispatchTasks() {
         if(isRetrying)return;
 
-        for (int i = 1; i <= agvManager.getAgvSize(); i++){
-            AGV agv = agvManager.getAgv(i);
-            if(agv.getStatus() != AGV.Status.ONLINE) continue;  // AGV未連線則無法派遣
-            if(agv.getTask() != null) continue;  // AGV任務中
+        agvManager.getAgvs().forEach(agv -> {
+            if(agv.getStatus() != AGV.Status.ONLINE) return;  // AGV未連線則無法派遣
+            if(agv.getTask() != null) return;  // AGV任務中
 
             boolean iAtStandbyStation = iEqualsStandbyStation(agv.getPlace());
             boolean taskQueueIEmpty = AGVTaskManager.isEmpty(agv.getId());
@@ -94,8 +93,7 @@ public class ProcessAGVTask {
             } else if (taskQueueIEmpty && !iAtStandbyStation){  // 派遣回待命點
                 goStandbyTask(agv);
             }
-
-        }
+        });
 
     }
 
@@ -128,8 +126,7 @@ public class ProcessAGVTask {
 
                 String nowPlace = agv.getPlace();
                 if(nowPlace.equals(task.getTerminalStation())){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
-                    completedTask(agv);
-                    return "OK";
+                    return "FAIL";
                 }
                 String url;
                 if (task.getTaskNumber().matches("#(SB|LB).*") || agv.getTaskStatus() == AGV.TaskStatus.PRE_TERMINAL_STATION){

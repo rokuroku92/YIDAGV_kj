@@ -73,22 +73,32 @@ public class AGVInstantStatus {
 
     @Scheduled(fixedRate = 1000) // 每秒執行
     public void updateAgvStatuses() {
-        // 抓取AGV狀態，並更新到agvStatuses
-        String[] agvStatusData = crawlAGVStatus().orElse(new String[0]);
-        if(agvStatusData.length == 0) {
-            for (int i = 0; i < agvManager.getAgvLength(); i++) {
-                AGV agv = agvManager.getAgv(i+1);
-                updateAGVOfflineStatus(agv);
-            }
+        // 從 Traffic Control 抓取 AGV 狀態，並更新到 agv
+        String[] allAgvInstantStatuses = crawlAGVStatus().orElse(new String[0]);
+
+        if (allAgvInstantStatuses.length == 0) {
+            // 資料錯誤時，通常不應該進入到這邊
+            agvManager.getAgvs().forEach(this::updateAGVOfflineStatus);
             return;
         }
-        for (int i = 0; i < agvManager.getAgvLength(); i++) {
-            AGV agv = agvManager.getAgv(i+1);
-            String[] data = agvStatusData[i].split(",");  // 分隔 AGV 系統資料
 
-            updateAGVBasicStatus(agv, data);
-            updateTaskStatus(agv);
-        }
+        agvManager.getAgvs().forEach(agv -> {
+            String[] identifiedAgvData = null;
+            // 比對資料，取出正確 AGV 資料
+            for (String agvInstantStatus : allAgvInstantStatuses) {
+                String[] unidentifiedAgvData = agvInstantStatus.split(",");  // 分隔 Traffic Control 資料
+                if (unidentifiedAgvData[0].trim().equals(Integer.toString(agv.getId()))) {
+                    identifiedAgvData = unidentifiedAgvData;
+                }
+            }
+            // 若正確取得，更新到 AGV 實例；反之設為離線。
+            if (identifiedAgvData == null) {
+                updateAGVOfflineStatus(agv);
+            } else {
+                updateAGVOnlineStatus(agv, identifiedAgvData);
+                updateTaskStatus(agv);
+            }
+        });
     }
 
 
@@ -110,15 +120,6 @@ public class AGVInstantStatus {
                     agv.setTaskStatus(AGV.TaskStatus.COMPLETED);
                 }
             }
-        }
-    }
-
-
-    private void updateAGVBasicStatus(AGV agv, String[] data){
-        if(data[0].trim().equals("-1")){  // 車號為-1時，判定為AGV離線
-            updateAGVOfflineStatus(agv);
-        } else {
-            updateAGVOnlineStatus(agv, data);
         }
     }
 
@@ -214,7 +215,7 @@ public class AGVInstantStatus {
             if(reDispatchCount < 3) {
                 notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.FAILED_EXECUTION_TASK);
                 processTasks.dispatchTaskToAGV(agv);
-                agv.setReDispatchCount(reDispatchCount);
+                agv.setReDispatchCount(++reDispatchCount);
             } else if (reDispatchCount == 3) {
                 processTasks.failedTask(agv);
                 agv.setReDispatchCount(0);
@@ -231,9 +232,10 @@ public class AGVInstantStatus {
     }
 
     private void handleExecutingTask(AGV agv){
-        if(agv.getTask().getStatus() == 1){
-            agv.getTask().setStatus(2);
-            taskListDao.updateTaskListStatus(agv.getTask().getTaskNumber(), 2);
+        AGVQTask task = agv.getTask();
+        if(task.getStatus() == 1){
+            task.setStatus(2);
+            taskListDao.updateTaskListStatus(task.getTaskNumber(), 2);
         }
     }
 
