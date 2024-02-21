@@ -34,7 +34,7 @@ public class SettingService {
                 return "AgvLowBatteryDuration參數為空值";
             } else if(settingRequest.getAgvObstacleDuration() == null){
                 return "AgvObstacleDuration參數為空值";
-            }else if(settingRequest.getAgvTaskExceptionOption() == null){
+            } else if(settingRequest.getAgvTaskExceptionOption() == null){
                 return "AgvTaskExceptionOption參數為空值";
             } else if(settingRequest.getHttpTimeout() == null){
                 return "HttpTimeout參數為空值";
