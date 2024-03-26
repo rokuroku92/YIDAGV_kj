@@ -1,9 +1,12 @@
 package com.yid.agv.backend.agv;
 
 
+import com.yid.agv.backend.ProcessAGVTask;
 import com.yid.agv.repository.AGVIdDao;
 import com.yid.agv.repository.StationDao;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +17,7 @@ import java.util.Map;
 
 @Component
 public class AGVManager {
+    private static final Logger log = LoggerFactory.getLogger(ProcessAGVTask.class);
     @Autowired
     private AGVIdDao agvIdDao;
     @Autowired
@@ -27,7 +31,7 @@ public class AGVManager {
     @PostConstruct
     public void initialize() {
         agvIdDao.queryAGVList().forEach(agvId -> agvMap.put(agvId.getId(), new AGV(agvId.getId())));
-        System.out.println("Initialize agvMap: "+ agvMap);
+        log.info("Initialize agvMap: "+ agvMap);
     }
 
     public int getAgvSize(){

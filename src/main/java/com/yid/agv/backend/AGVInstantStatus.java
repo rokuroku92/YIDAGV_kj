@@ -10,6 +10,8 @@ import com.yid.agv.model.Station;
 import com.yid.agv.repository.*;
 import com.yid.agv.service.HomePageService;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,8 +29,8 @@ import java.util.stream.Collectors;
 @Component
 public class AGVInstantStatus {
 
-    @Autowired
-    private TestFakeData testFakeData;
+    private static final Logger log = LoggerFactory.getLogger(ProcessAGVTask.class);
+
     @Value("${http.timeout}")
     private int HTTP_TIMEOUT;
     @Value("${agvControl.url}")
@@ -260,7 +262,7 @@ public class AGVInstantStatus {
                             processTasks.dispatchTaskToAGV(agv);
                         }
                     }
-                    default -> System.out.println("TASK_EXCEPTION_OPTION值錯誤");
+                    default -> log.warn("TASK_EXCEPTION_OPTION值錯誤");
                 }
             }
 
@@ -303,7 +305,7 @@ public class AGVInstantStatus {
                             notificationDao.insertMessage(agvTitle, NotificationDao.Status.ERROR_AGV_DATA);
                             homePageService.setIAlarm(0);
                         }
-                        System.out.println("異常agv狀態資料");
+                        log.warn("異常agv狀態資料");
                     }
                 }
             }
@@ -394,7 +396,7 @@ public class AGVInstantStatus {
                     notificationDao.insertMessage(agvTitle, NotificationDao.Status.ERROR_AGV_DATA);
                     homePageService.setIAlarm(0);
                 }
-                System.out.println("異常agv狀態資料");
+                log.warn("異常agv狀態資料");
             }
         }
     }
@@ -421,7 +423,7 @@ public class AGVInstantStatus {
         } catch (IOException | InterruptedException e) {
 //            e.printStackTrace();
             if(iCon){
-                System.out.println("AGV 控制系統未連線");
+                log.warn("Traffic Control is not connected");
                 notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.OFFLINE);
                 iCon=false;
             }

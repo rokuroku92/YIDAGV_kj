@@ -89,35 +89,26 @@ const GRID_DEF_HTML = {
         <div class="col-10 flex-wrap table-container grid-btns">
             <div class="row">
             <div class="col">
-                <div data-val="D-1" class="grid-btn">D-1</div>
-                <div data-val="D-2" class="grid-btn">D-2</div>
+                <div data-val="D-1" class="grid-btn t">D-1</div>
+                <div data-val="D-2" class="grid-btn t">D-2</div>
+                <div data-val="D-3" class="grid-btn t">D-3</div>
+                <div data-val="D-4" class="grid-btn t">D-4</div>
+                <div data-val="D-5" class="grid-btn t">D-5</div>
+                <div data-val="D-6" class="grid-btn t">D-6</div>
+                <div data-val="D-7" class="grid-btn t">D-7</div>
             </div>
             </div>
             <div class="row">
             <div class="col">
-                <div data-val="D-3" class="grid-btn">D-3</div>
-                <div data-val="D-4" class="grid-btn">D-4</div>
+                <div data-val="D-8" class="grid-btn t">D-8</div>
+                <div data-val="D-9" class="grid-btn t">D-9</div>
+                <div data-val="D-10" class="grid-btn t">D-10</div>
+                <div data-val="D-11" class="grid-btn t">D-11</div>
+                <div data-val="D-12" class="grid-btn t">D-12</div>
+                <div data-val="D-13" class="grid-btn t">D-13</div>
+                <div data-val="D-14" class="grid-btn t">D-14</div>
             </div>
             </div>
-            <div class="row">
-            <div class="col">
-                <div data-val="D-5" class="grid-btn">D-5</div>
-                <div data-val="D-6" class="grid-btn">D-6</div>
-            </div>
-            </div>
-            <div class="row">
-            <div class="col">
-                <div data-val="D-7" class="grid-btn">D-7</div>
-                <div data-val="D-8" class="grid-btn">D-8</div>
-            </div>
-            </div>
-            <div class="row">
-            <div class="col">
-                <div data-val="D-9" class="grid-btn">D-9</div>
-                <div data-val="D-10" class="grid-btn">D-10</div>
-            </div>
-            </div>
-
         </div>
         <div class="col-1"></div>
         </div>
@@ -174,8 +165,12 @@ const GRID_DEF_HTML = {
             </div>
         </div>
         <div class="col-10 flex-wrap table-container grid-btns">
-            <div data-val="G-1" class="grid-btn">G-1</div>
-
+            <div class="row">
+            <div class="col">
+                <div data-val="G-1" class="grid-btn t">G-1</div>
+                <div data-val="G-2" class="grid-btn t">G-2</div>
+            </div>
+            </div>
         </div>
         <div class="col-1"></div>
         </div>
