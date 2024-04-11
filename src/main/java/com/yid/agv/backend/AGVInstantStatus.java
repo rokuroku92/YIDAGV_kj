@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Component
 public class AGVInstantStatus {
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessAGVTask.class);
+    private static final Logger log = LoggerFactory.getLogger(AGVInstantStatus.class);
 
     @Value("${http.timeout}")
     private int HTTP_TIMEOUT;

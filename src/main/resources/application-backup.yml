@@ -1,0 +1,20 @@
+jdbc:
+  url: jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
+  username: root
+  password: 12345678
+
+agvControl:
+  #  url: http://192.168.0.100:20100
+  #  url: http://10.11.33.232:20100
+  #  url: http://66.1.33.200:20100
+  url: http://localhost:20100
+
+agv:
+  low_battery: 70  # AGV電量低於多少時，派遣回待命點
+  low_battery_duration: 60  # AGV低電量多久時，派遣回待命點
+  obstacle_duration: 30 # 前有障礙多久時需要警報
+  task_exception_option: 0 # AGV上線並且實例有任務時TrafficControl回報沒有執行任務時該: 0刪除任務 1重新派遣
+
+http:
+  timeout: 2
+  max_retry: 3 # 重新發送AGV命令次數

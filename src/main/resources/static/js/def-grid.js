@@ -146,7 +146,7 @@ const GRID_DEF_HTML = {
             </div>
         </div>
         <div class="col-10 flex-wrap table-container grid-btns">
-            <div data-val="F-1" class="grid-btn">F-1</div>
+            <div data-val="F-1" class="grid-btn t">F-1</div>
             <div data-val="F-2" class="grid-btn">F-2</div>
             <div data-val="F-3" class="grid-btn">F-3</div>
             <div data-val="F-4" class="grid-btn">F-4</div>

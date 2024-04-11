@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Component
 public class AGVManager {
-    private static final Logger log = LoggerFactory.getLogger(ProcessAGVTask.class);
+    private static final Logger log = LoggerFactory.getLogger(AGVManager.class);
     @Autowired
     private AGVIdDao agvIdDao;
     @Autowired

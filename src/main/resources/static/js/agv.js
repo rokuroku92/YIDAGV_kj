@@ -11,9 +11,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     // setWindow();
     // setStationPositions();
     // updateAGVPositions();
-    // setInterval(demoPlace, 100);
+    // setInterval(demoPlace, 400);
     // updateGridPositions();
-    // updateAGVPosition("1003");
+    updateAGVPosition("1053");
     try {
         await setAGVList();
     } catch (error) {
@@ -201,10 +201,10 @@ function demoPlace(){
 }
 
 const mapTagPositions = {
-    "1001": [25, 18],
-    "1002": [28, 18],
-    "1003": [25, 31.5],
-    "1004": [28, 31.5],
+    "1001": [28, 18],
+    "1002": [28, 24],
+    "1003": [25, 24],
+    "1004": [28, 28],
     "1005": [25, 45.5],
     "1006": [28, 45],
     "1007": [25, 59],
@@ -313,6 +313,7 @@ const mapTagPositions = {
     "1097": [79, 73.5],
     "1098": [78.5, 67],
     "1099": [78.5, 61],
+    "1053": [78, 42],
     "1100": [78.5, 49],
     "1101": [76.5, 50],
     "1102": [75.7, 40],

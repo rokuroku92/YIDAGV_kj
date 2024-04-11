@@ -8,9 +8,9 @@ INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1640, 'A-5', 'A區第�
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1638, 'A-6', 'A區第六格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1636, 'A-7', 'A區第七格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1634, 'A-8', 'A區第八格格位');
-INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1608, 'B-1', 'B區第一格格位');
-INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1854, 'B-2', 'B區第二格格位');
-INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1850, 'B-3', 'B區第三格格位');
+INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1108, 'B-1', 'B區第一格格位');
+INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1354, 'B-2', 'B區第二格格位');
+INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1350, 'B-3', 'B區第三格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1310, 'C-1', 'C區第一格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1312, 'C-2', 'C區第二格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1314, 'C-3', 'C區第三格格位');
@@ -45,7 +45,7 @@ INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1536, 'E-1', 'E區第�
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1040, 'E-2', 'E區第二格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1542, 'E-3', 'E區第三格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1045, 'E-4', 'E區第四格格位');
-INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1001, 'F-1', 'F區第一格格位');
+INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1251, 'F-1', 'F區第一格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1003, 'F-2', 'F區第二格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1005, 'F-3', 'F區第三格格位');
 INSERT INTO `station_data`(`tag`, `name`, `memo`) VALUES(1007, 'F-4', 'F區第四格格位');

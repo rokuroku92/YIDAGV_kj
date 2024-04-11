@@ -1,0 +1,14 @@
+jdbc:
+  url: jdbc:mysql://localhost:3306/AGV_kj?zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Taipei&characterEncoding=utf-8&useUnicode=true
+  username: root
+  password: '12345678'
+agvControl:
+  url: http://localhost:20100
+agv:
+  low_battery: 60
+  low_battery_duration: 60
+  obstacle_duration: 30
+  task_exception_option: 0
+http:
+  timeout: 2
+  max_retry: 3
