@@ -128,7 +128,9 @@ public class ProcessAGVTask {
                 if (task == null) return null;
 
                 String nowPlace = agv.getPlace();
-                if(nowPlace.equals(task.getTerminalStation())){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
+                if(nowPlace.equals(Integer.toString(stationIdTagMap.get(task.getTerminalStationId())))){  // 主要是為了防止派遣回待命點時，出現無限輪迴。
+                    failedTask(agv);
+                    isRetrying = false;
                     return "FAIL";
                 }
                 String url;
@@ -157,10 +159,12 @@ public class ProcessAGVTask {
                 switch (webpageContent) {
                     case "OK" -> {
                         log.info("Task number " + task.getTaskNumber() + " has been dispatched.");
+                        isRetrying = false;
                         return "OK";
                     }
                     case "BUSY" -> {
                         log.info("Send task failed: BUSY");
+                        isRetrying = false;
                         return "BUSY";
                     }
                     case "FAIL" -> {
@@ -176,6 +180,7 @@ public class ProcessAGVTask {
                     default -> {
                         log.warn("TrafficControl result exception: " + webpageContent);
                         notificationDao.insertMessage(NotificationDao.Title.AGV_SYSTEM, NotificationDao.Status.ERROR_AGV_DATA);
+                        isRetrying = false;
                         return "FAIL";
                     }
                 }

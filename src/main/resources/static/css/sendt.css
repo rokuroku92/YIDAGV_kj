@@ -5,7 +5,7 @@
     margin-bottom: 1em;
 }
 .grid-col.A{
-    background-image: url("/static/image/Abg.png");
+    /* background-image: url("/static/image/Abg.png"); */
     background-repeat:no-repeat;
     /* background-attachment: fixed; */
     background-size: 210%;
@@ -129,6 +129,9 @@
 } */
 .grid-btn.occupied{
     background-color: #b6993a;
+}
+.grid-btn.disable{
+    background-color: #636363;
 }
 .grid-btn.start{
     height: 4em;

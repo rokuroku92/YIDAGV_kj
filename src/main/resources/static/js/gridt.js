@@ -208,6 +208,7 @@ function gridUpdate(data){
         allGrids.forEach(function(grid) {
             grid.classList.remove("booked");
             grid.classList.remove("occupied");
+            grid.classList.remove("disable");
             gridName = grid.getAttribute("data-val");
             data.forEach(function(gdata) {
                 if(gdata.station === gridName){
@@ -215,6 +216,8 @@ function gridUpdate(data){
                         grid.classList.add("booked");
                     } else if(gdata.status === 2){
                         grid.classList.add("occupied");
+                    } else if(gdata.status === 6){
+                        grid.classList.add("disable");
                     }
                 }
             });
@@ -251,7 +254,7 @@ function bindGridButton(){
                             console.error('Fetch error:', error);
                         });
                 }
-            } else {
+            } else if(!grid.classList.contains('disable')){
                 const cf = confirm("是否將 " + gridName + " 格位設置佔用狀態");
                 if(cf){
                     fetch(baseUrl + `/api/grid/setStatus?stationName=${gridName}&mode=occupied`)

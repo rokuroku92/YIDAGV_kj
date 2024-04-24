@@ -175,3 +175,6 @@
 .map-grid.occupied{
     background-color: #b6993a;
 }
+.map-grid.disable{
+    background-color: #636363;
+}

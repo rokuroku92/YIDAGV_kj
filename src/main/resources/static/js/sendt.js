@@ -39,6 +39,7 @@ function gridUpdate(data){
         allGrids.forEach(function(grid) {
             grid.classList.remove("booked");
             grid.classList.remove("occupied");
+            grid.classList.remove("disable");
             gridName = grid.getAttribute("data-val");
             data.forEach(function(gdata) {
                 if(gdata.station === gridName){
@@ -46,6 +47,8 @@ function gridUpdate(data){
                         grid.classList.add("booked");
                     } else if(gdata.status === 2){
                         grid.classList.add("occupied");
+                    } else if(gdata.status === 6){
+                        grid.classList.add("disable");
                     }
                 }
             });
@@ -104,7 +107,7 @@ function bindGridButton(){
     // 为每个按钮添加点击事件处理程序
     startGrids.forEach(grid => {
         grid.addEventListener('click', function() {
-            if(!grid.classList.contains('booked') && grid.classList.contains('occupied')){
+            if(!grid.classList.contains('booked') && grid.classList.contains('occupied') && !grid.classList.contains('disable')){
                 document.getElementById("infrom").value = this.getAttribute("data-val");
             }
 
@@ -118,7 +121,7 @@ function bindGridButton(){
     // 为每个按钮添加点击事件处理程序
     terminalGrids.forEach(grid => {
         grid.addEventListener('click', function() {
-            if(!grid.classList.contains('occupied') && !grid.classList.contains('booked')){
+            if(!grid.classList.contains('occupied') && !grid.classList.contains('booked') && !grid.classList.contains('disable')){
                 document.getElementById("into").value = this.getAttribute("data-val");
             }
         });
